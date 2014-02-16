@@ -6,7 +6,7 @@ import re
 
 class HDareaFetcher(Hook):
     __name__ = "HDareaFetcher"
-    __version__ = "0.6"
+    __version__ = "0.1"
     __description__ = "Checks HD-AREA.org for new Movies. "
     __config__ = [("activated", "bool", "Activated", "False"),
                   ("interval", "int", "Check interval in minutes", "60"),
@@ -20,7 +20,7 @@ class HDareaFetcher(Hook):
     def setup(self):
         self.interval = self.getConfig("interval") * 60 
     def periodical(self):
-        for site in ('Cinedubs', 'top-rls', 'movies', 'Old_Stuff', 'msd'):
+        for site in ('top-rls','movies','Cinedubs','msd','Old_Stuff'):
             address = ('http://hd-area.org/index.php?s=' + site)
             page = urllib2.urlopen(address).read()
             soup = BeautifulSoup(page)
@@ -31,12 +31,11 @@ class HDareaFetcher(Hook):
             try:
                 for title in soup.findAll("div", {"class" : "topbox"}):
                     for title2 in title.findAll("div", {"class" : "boxlinks"}):
-                         for title3 in title2.findAll("div", {"class" : "title"}):
+                        for title3 in title2.findAll("div", {"class" : "title"}):
                             movieTit.append(title3.getText())
                     for imdb in title.findAll("div", {"class" : "boxrechts"}):
                         if 'IMDb' in imdb.getText():
-                            for aref in imdb.findAll('a'):
-                                movieRating.append(imdb.getText())
+                            movieRating.append(imdb.getText())
                         if not 'IMDb' in imdb.getText():
                             movieRating.append('IMDb 0.1/10')
             except:
@@ -46,21 +45,24 @@ class HDareaFetcher(Hook):
                 for descr in download.findAll("div", {"class":"beschreibung"}):
                     links = descr.findAll("span", {"style":"display:inline;"})
                     for link in links:
-                            url = link.a["href"]
-                            hoster = link.text
-                            for prefhoster in self.getConfig("hoster").split(";"):
-                                if prefhoster.lower() in hoster.lower():
-                                    movieLink.append(url)
-                                    break
-                            else:
-                                continue
-                            break
+                        url = link.a["href"]
+                        hoster = link.text
+                        for prefhoster in self.getConfig("hoster").split(";"):
+                            if prefhoster.lower() in hoster.lower():
+                                movieLink.append(url)
+                                break
+                        else:
+                            continue
+                        break
 
             f = open("hdarea.txt", "a")            
-            if (len(movieLink) > 0) :
+            #print len(movieTit)
+            #print len(movieLink)
+            #print len(movieRating)
+            if (len(movieLink) == len(movieTit) == len(movieRating)) :
                 for i in range(len(movieTit)):                 
+
                     link = movieLink[i]
-                    #cleaning the title from unnecessary stuff
                     title = movieTit[i]
                     title = title.lower()
                     title = title.replace('.german','')
@@ -70,10 +72,12 @@ class HDareaFetcher(Hook):
                     title = re.sub(".remux-\S+", "", title)
                     title = re.sub(".web\S+", "", title)
                     title = re.sub(".nfo(-\S+|)", "", title)
+                    title = title.replace('.unrated','')
+                    title = title.replace('.directors','')
+                    title = title.replace('.cut','')
                     title = title.replace('.dual','')
                     title = title.replace('.avc','')
                     title = title.replace('.dl','')
-                    title = title.replace('.ac3md','')
                     title = title.replace('.ac3ld','')
                     title = title.replace('.ac3d','')
                     title = title.replace('.ac3','')
@@ -93,30 +97,30 @@ class HDareaFetcher(Hook):
                     title = title.replace('.ml','')
                     title = title.replace('.flac','')
                     title = title.replace('.read',' ')
-                    title = title.replace('.unrated','')
-                    title = title.replace('.directors','')
-                    title = title.replace('.cut','')
                     s = open("hdarea.txt").read()    
                     if title in s:
-                        self.core.log.debug("HDArea: Already been added:\t\t" +title[0:30])
+                        self.core.log.debug("HDArea: Already been added:\t\t" +title)
                     else:
                         rating_txt = movieRating[i]
                         rating_float = rating_txt[5:8]
                         rating = rating_float.replace(',','.')    
                         rating = rating.replace('-/','0.')
                         list = [self.getConfig("quality")]
-                        list2 = ['S0','s0','season','Season','DOKU','doku','Doku','s1','s2','s3','s4','s5']
+                        list2 = ['S0','s0','season','Season','DOKU','doku','Doku','s1','s2','s3','s4']
                         if any(word in title for word in list) and rating > self.getConfig("rating"):
                             if any (word in title for word in list2):
                                 self.core.log.debug("HDArea: REJECTED! not a Movie:\t\t" +title)
                             else: 
                                 f.write(title+"\n")                      
                                 f.write(link+"\n\n")
-                                self.core.api.addPackage(title.encode("utf-8")+" IMDb: "+rating, link.split('"'), 1 if self.getConfig("queue") else 0)               
+                                self.core.api.addPackage(title.encode("utf-8")+" IMDB: "+rating, link.split('"'), 1 if self.getConfig("queue") else 0)               
                                 self.core.log.info("HDArea: !!! ACCEPTED !!!:\t\t" +title+"... with rating:\t"+rating)
                         else:
                             if rating < self.getConfig("rating"):
-                                self.core.log.debug("HDArea: IMDb-Rating ("+rating+") to low:\t\t" +title)
+                                self.core.log.debug("HDArea: IMDB-Rating ("+rating+") to low:\t\t" +title)
                             if not any(word in title for word in list):
                                 self.core.log.debug("HDArea: Quality ("+self.getConfig("quality")+") mismatch:\t\t" +title)
+            else:
+                self.core.log.debug("ERROR: Array length mismatch!!!")         
+
             f.close()
