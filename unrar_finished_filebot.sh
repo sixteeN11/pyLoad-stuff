@@ -26,15 +26,22 @@ logit(){
 	return 0
 }
 
-logit "##########################"
-logit "............unrar_finished"
-sleep 10
-count=`find "$DownloadFolder" -name "*.rar" -o -name "*.r0*" 2>/dev/null | wc -l`
-if [ $count != 0 ]
-then
+#LockSytsem
+lockfile=/root/.pyload/Logs/filebot.lock
+
+if grep $1 $lockfile; then
+    logit "ABORT! Already processed that Directory! ($1)"
+    exit
+else
+        echo "$1" > "$lockfile"
+        logit "##########################"
+	logit "########### unrar_finished"
+	count=`find "$DownloadFolder" -name "*.rar" -o -name "*.r0*" 2>/dev/null | wc -l`
+	if [ $count != 0 ]
+	then
 		logit "ABORT! Still some Archives"
 		exit
-else
+	else
 		logit "Starting FileBot!"
 		logit "$DownloadFolder"
 		# Funktionen #
