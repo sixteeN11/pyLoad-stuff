@@ -6,7 +6,9 @@ BaseDir=/media/5a24e136-09b9-48e1-95db-b44d5db3e28a
 DownloadDir=${BaseDir}/Medien/Downloads
 MediaDir=${BaseDir}/Medien
 LogFile=/root/.pyload/Logs/log.txt 			# LogFile
+LockFile=/root/.pyload/Logs/filebot.lock		# LockFile
 ExtScript=filebot.sh
+
 
 #Pyload
 DownloadFolder=$MediaDir/$1
@@ -26,14 +28,11 @@ logit(){
 	return 0
 }
 
-#LockSytsem
-lockfile=/root/.pyload/Logs/filebot.lock
-
-if grep $1 $lockfile; then
+if grep $1 $LockFile; then
     logit "ABORT! Already processed that Directory! ($1)"
     exit
 else
-        echo "$1" > "$lockfile"
+        echo "$1" > "$LockFile"
         logit "##########################"
 	logit "########### unrar_finished"
 	count=`find "$DownloadFolder" -name "*.rar" -o -name "*.r0*" 2>/dev/null | wc -l`
