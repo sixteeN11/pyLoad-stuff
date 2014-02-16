@@ -68,5 +68,6 @@ else
 		#xbmc_clean
 		#logit "XBMC scan"
 		#xbmc_scan
-exit
+                exit
+        fi
 fi
