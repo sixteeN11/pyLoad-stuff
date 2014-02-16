@@ -1,5 +1,5 @@
 #!/bin/bash
-# Version 0.1 
+# Version 0.2
 # Globale Variablen #
 DATE=$(date +%d.%m.%Y\ %H:%M:%S) 
 BaseDir=/media/5a24e136-09b9-48e1-95db-b44d5db3e28a
