@@ -6,14 +6,15 @@ import re
 
 class HDareaFetcher(Hook):
     __name__ = "HDareaFetcher"
-    __version__ = "0.5"
+    __version__ = "0.1"
     __description__ = "Checks HD-AREA.org for new Movies. "
     __config__ = [("activated", "bool", "Activated", "False"),
                   ("interval", "int", "Check interval in minutes", "60"),
-                  ("queue", "bool", "move Movies directly to Queue", "False"),
                   ("quality", "str", "720p or 1080p", "720p"),
-                  ("rating","float","min. IMDB rating","6.1"),
-                  ("hoster", "str", "Preferred Hoster (seperated by ;)","uploaded;cloudzer;filemonkey")]
+                  ("rating","float","Collector Rating","6.1"),
+                  ("rating2","float","Queue Rating","8.0"),
+                  ("min_year","long","Min Year","1990"),
+                  ("hoster", "str", "Preferred Hoster (seperated by ;)","uploaded;cloudzer")]
     __author_name__ = ("Gutz-Pilz")
     __author_mail__ = ("")
 
@@ -27,6 +28,7 @@ class HDareaFetcher(Hook):
             movieTit = []
             movieLink = []
             movieRating = []
+            movieYear = []
 
             try:
                 for title in soup.findAll("div", {"class" : "topbox"}):
@@ -35,9 +37,17 @@ class HDareaFetcher(Hook):
                             movieTit.append(title3.getText())
                     for imdb in title.findAll("div", {"class" : "boxrechts"}):
                         if 'IMDb' in imdb.getText():
+                            #for aref in imdb.findAll('a'):
                             movieRating.append(imdb.getText())
                         if not 'IMDb' in imdb.getText():
                             movieRating.append('IMDb 0.1/10')
+                    for year in soup.findAll("div", {"class":"download"}):
+                        for year1 in year.findAll("div", {"class":"beschreibung"}):
+                            if 'Jahr' in year1.getText():
+                                movieYear.append(year1.getText())
+                        if not 'Jahr' in year1.getText():
+                            movieYear.append('JahrJahr:1950')
+
             except:
                 pass
 
@@ -56,12 +66,12 @@ class HDareaFetcher(Hook):
                         break
 
             f = open("hdarea.txt", "a")            
-            #print len(movieTit)
-            #print len(movieLink)
-            #print len(movieRating)
+#            print len(movieTit)
+#            print len(movieLink)
+#            print len(movieRating)
+#            print len(movieYear) 
             if (len(movieLink) == len(movieTit) == len(movieRating)) :
                 for i in range(len(movieTit)):                 
-
                     link = movieLink[i]
                     title = movieTit[i]
                     title = title.lower()
@@ -105,21 +115,34 @@ class HDareaFetcher(Hook):
                         rating_float = rating_txt[5:8]
                         rating = rating_float.replace(',','.')    
                         rating = rating.replace('-/','0.')
+                        year = movieYear[i]
+                        year = year[9:13]
                         list = [self.getConfig("quality")]
                         list2 = ['S0','s0','season','Season','DOKU','doku','Doku','s1','s2','s3','s4']
+
                         if any(word in title for word in list) and rating > self.getConfig("rating"):
                             if any (word in title for word in list2):
                                 self.core.log.debug("HDArea: REJECTED! not a Movie:\t\t" +title)
-                            else: 
-                                f.write(title+"\n")                      
-                                f.write(link+"\n\n")
-                                self.core.api.addPackage(title.encode("utf-8")+" IMDB: "+rating, link.split('"'), 1 if self.getConfig("queue") else 0)               
-                                self.core.log.info("HDArea: !!! ACCEPTED !!!:\t\t" +title+"... with rating:\t"+rating)
+                            else:
+                                if rating > self.getConfig("rating2"): 
+                                    f.write(title+"\n")                      
+                                    f.write(link+"\n\n")
+                                    self.core.api.addPackage(title.encode("utf-8")+" IMDB: "+rating, link.split('"'), 1)               
+                                    self.core.log.info("HDArea: !!! JACKPOT !!!:\t\t" +title+"... with rating:\t"+rating)
+                                else:
+                                    if year > self.getConfig("min_year"):
+                                        f.write(title+"\n")
+                                        f.write(link+"\n\n")
+                                        self.core.api.addPackage(title.encode("utf-8")+" IMDB: "+rating, link.split('"'), 0)
+                                        self.core.log.info("HDArea: !!! ACCEPTED !!!:\t\t" +title+"... with rating:\t"+rating)
+                                    else: 
+                                        self.core.log.debug("HDArea: REJECTED! Movie older than "+self.getConfig("min_year")+":\t\t" +title)
                         else:
                             if rating < self.getConfig("rating"):
                                 self.core.log.debug("HDArea: IMDB-Rating ("+rating+") to low:\t\t" +title)
                             if not any(word in title for word in list):
                                 self.core.log.debug("HDArea: Quality ("+self.getConfig("quality")+") mismatch:\t\t" +title)
+                        
             else:
                 self.core.log.debug("ERROR: Array length mismatch!!!")         
 
