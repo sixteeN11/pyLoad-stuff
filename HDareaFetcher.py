@@ -47,6 +47,7 @@ class HDareaFetcher(Hook):
                                 movieYear.append(year1.getText())
                         if not 'Jahr' in year1.getText():
                             movieYear.append('JahrJahr:1950')
+                            #for year2 in year1.findAll("strong", {"class":"main"}):
 
             except:
                 pass
@@ -72,6 +73,7 @@ class HDareaFetcher(Hook):
 #            print len(movieYear) 
             if (len(movieLink) == len(movieTit) == len(movieRating)) :
                 for i in range(len(movieTit)):                 
+                    #print movieYear[i]
                     link = movieLink[i]
                     title = movieTit[i]
                     title = title.lower()
@@ -117,6 +119,7 @@ class HDareaFetcher(Hook):
                         rating = rating.replace('-/','0.')
                         year = movieYear[i]
                         year = year[9:13]
+#                        print year
                         list = [self.getConfig("quality")]
                         list2 = ['S0','s0','season','Season','DOKU','doku','Doku','s1','s2','s3','s4']
 
@@ -124,6 +127,8 @@ class HDareaFetcher(Hook):
                             if any (word in title for word in list2):
                                 self.core.log.debug("HDArea: REJECTED! not a Movie:\t\t" +title)
                             else:
+                                #if year < self.getConfig("min_year"):
+                                    #self.core.log.debug("HDArea: REJECTED! Movie older than "+self.getConfig("min_year")+":\t\t" +title)
                                 if rating > self.getConfig("rating2"): 
                                     f.write(title+"\n")                      
                                     f.write(link+"\n\n")
