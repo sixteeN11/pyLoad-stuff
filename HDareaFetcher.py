@@ -141,7 +141,7 @@ class HDareaFetcher(Hook):
                                         self.core.api.addPackage(title.encode("utf-8")+" IMDB: "+rating, link.split('"'), 0)
                                         self.core.log.info("HDArea: !!! ACCEPTED !!!:\t\t" +title+"... with rating:\t"+rating)
                                     else: 
-                                        self.core.log.debug("HDArea: REJECTED! Movie older than "+self.getConfig("min_year")+":\t\t" +title)
+                                        self.core.log.debug("HDArea: REJECTED! Movie older than "+self.getConfig("min_year")+":\t" +title)
                         else:
                             if rating < self.getConfig("rating"):
                                 self.core.log.debug("HDArea: IMDB-Rating ("+rating+") to low:\t\t" +title)
