@@ -57,6 +57,9 @@ logit(){
 		sortiere
 		logit "cleaning Clutter with FileBot"
 		cleaning
+		logit "reset Lock-File"
+                echo "" > $LockFile
+
 		#logit "XBMC clean"
 		#xbmc_clean
 		#logit "XBMC scan"
