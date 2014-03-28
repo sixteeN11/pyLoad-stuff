@@ -6,6 +6,7 @@ BaseDir=/media/5a24e136-09b9-48e1-95db-b44d5db3e28a
 DownloadDir=${BaseDir}/Medien/Downloads
 MediaDir=${BaseDir}/Medien
 LogFile=/root/.pyload/Logs/log.txt 			# LogFile
+LockFile=/root/.pyload/Logs/filebot.lock                # LockFile
 ExtScript=filebot.sh
 
 
@@ -26,6 +27,10 @@ logit(){
 	echo -e "$logline " $* | tee -a $LogFile
 	return 0
 }
+if grep $1 $LockFile; then
+    logit "ABORT! Already processed that Directory! ($1)"
+    exit
+else
 
         logit "##########################"
 	logit "########### unrar_finished"
@@ -35,6 +40,7 @@ logit(){
 		logit "ABORT! Still some Archives"
 		exit
 	else
+		echo "$1" > "$LockFile"
 		logit "Starting FileBot!"
 		logit "$DownloadFolder"
 		# Funktionen #
@@ -59,10 +65,10 @@ logit(){
 		cleaning
 		logit "reset Lock-File"
                 echo "" > $LockFile
-
 		#logit "XBMC clean"
 		#xbmc_clean
 		#logit "XBMC scan"
 		#xbmc_scan
                 exit
         fi
+fi
