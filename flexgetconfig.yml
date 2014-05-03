@@ -1,0 +1,129 @@
+templates:
+  global:
+    pyload:
+      api: http://localhost:8888/api
+      queue: yes
+      username: admin
+      password: xxx
+      parse_url: no
+      hoster:
+        - UploadedTo
+        - UploadedNet
+      multiple_hoster: yes
+  tv_ger:
+    series:
+      settings:
+        720p:
+          exact: yes
+          propers: 3 days
+          quality: 720p+
+          identified_by: ep
+      720p:
+        - Rectify
+        - Intelligence
+        - True Detective
+        - New Girl
+        - Misfits
+        - Hannibal
+        - Homeland
+        - The Slap
+        - The Following
+        - Suits
+        - Game of Thrones
+        - Sherlock
+        - Dexter
+        - White Collar
+        - The Big Bang Theory
+        - Arrow
+        - The Walking Dead
+        - Elementary
+        - Lilyhammer
+        - Boardwalk Empire
+        - Helix
+        - Schulz in the Box
+        - The Americans 2013
+        - The Americans (2013)
+        - House of cards
+        - Vikings
+        - Believe
+        - Ripper Street
+  tv_eng:
+    series:
+      settings:
+        720p:
+          exact: yes
+          propers: 3 days
+          quality: 720p+
+          identified_by: ep
+      720p:
+        - The Big Bang Theory
+        - Game of Thrones
+        - Bering Sea Gold
+        - Gravity Falls
+        - Sherlock
+        - Gold Rush Alaska
+        - New Girl
+        - Jungle Gold
+        - The Walking Dead
+  movies:
+    imdb_required: yes
+    imdb:
+      min_score: 6.0
+      min_year: 1990
+    manipulate:
+      - title:
+          replace:
+            regexp: (?i)\b(.fancut|.german|.uncut|.extended|.se|.dubbed|.dl|.dts|.ac3|.ac3d|.x264*)\b
+            format: ''
+    regexp:
+      reject:
+      - \b(1080p)\b: {from: title}
+      - \b(COMPLETE)\b: {from: title}
+      - \b(Remux)\b: {from: title}
+      - \b(Eroti(c|k))\b: {from: title}
+      - \b(sub(s|bed))\b: {from: title}
+      - \b(XXX)\b: {from: title} 
+      - \b(S\d{1,2})\b: {from: title}
+      - \b(S\d+E\d+)\b: {from: title}
+schedules:
+  - tasks: '*'
+    interval:
+      minutes: 30
+tasks:
+  directdownload.tv:
+    template: tv_eng
+    inputs:
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=801107ed80ae2f52915110c6036f9f30&_render=rss
+    accept_all: no
+    manipulate:
+      - title:
+          replace:
+            regexp: '(.*)'
+            format: '[ENGLISCH] \1'
+  serienjunkies:
+    inputs:
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=801107ed80ae2f52915110c6036f9f30&_render=rss&page=1
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=801107ed80ae2f52915110c6036f9f30&_render=rss&page=2
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=801107ed80ae2f52915110c6036f9f30&_render=rss&page=3
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=801107ed80ae2f52915110c6036f9f30&_render=rss&page=4
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=801107ed80ae2f52915110c6036f9f30&_render=rss&page=5
+    accept_all: no
+    template: tv_ger
+  hd-area:
+    inputs:
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=3377a3dcc889527660e9065d7f008829&_render=rss&page=1
+    accept_all: no
+    template: movies
+    exists_movie: /media/5a24e136-09b9-48e1-95db-b44d5db3e28a/Medien/Movies
+    email:
+      from: xxxxxxxx
+      to: xxxxxxx
+      smtp_host: smtp.gmail.com
+      smtp_port: 587
+      smtp_username: xxxxx
+      smtp_password: xxxxx
+      smtp_tls: yes
+      template: accepted
+    serienjunkies:
+      language: de
+      hoster: ul
