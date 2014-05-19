@@ -17,7 +17,7 @@ SERVICE2=filebot
 #FileBot-defs
 MovieFormat="movieFormat=Movies/{net.sourceforge.filebot.WebServices.TMDb.getMovieInfo(movie, Locale.GERMAN).name} {'('+y+')'}/{net.sourceforge.filebot.WebServices.TMDb.getMovieInfo(movie, Locale.GERMAN).name} {'('+y+')'}"
 Ignore="ignore=\b(?i:doku)\b"
-Execute="exec=cd /root/ && ./$ExtScript \"{file}\""
+Execute="exec=cd / && ./$ExtScript \"{file}\""
 Extras="clean=y artwork=n"
 
 
@@ -26,18 +26,12 @@ logit(){
         echo -e "$logline " $* | tee -a $LogFile
         return 0
 }
-
-#LockSytsem
-LockFile=/root/.pyload/Logs/filebot.lock
-
-if grep $1 $LockFile; then
-    logit "ABORT! Already processed that Directory! ($1)"
-    exit
-else
         echo "$1" > "$lockfile"
         logit "##########################"
         logit "######### package_finished"
-        count=`find "$DownloadFolder" -name "*.rar" -o -name "*.r0*" 2>/dev/null | wc -l`
+        #count=`find "$DownloadFolder" -name "*.rar" -o -name "*.r0*" 2>/dev/null | wc -l`
+	cd "$DownloadFolder"
+        count=`ls -1 *.rar 2>/dev/null | wc -l`
         if [ $count != 0 ]
         then
                 logit "ABORT! Still some Archives"
@@ -53,10 +47,10 @@ else
                 filebot -script fn:cleaner "$DownloadFolder" --def root=y "$Ignore" "exts=jpg|nfo|rar|etc" "terms=sample|trailer|etc"
                 }
                 xbmc_clean(){
-                curl -s -d '{"jsonrpc":"2.0","method":"VideoLibrary.Clean","id":1}' -H 'content-type: application/json;' http://192.168.0.107:8585/jsonrpc?VideoLibrary.Clean
+                curl -s -d '{"jsonrpc":"2.0","method":"VideoLibrary.Clean","id":1}' -H 'content-type: application/json;' http://192.168.0.107:8080/jsonrpc?VideoLibrary.Clean
                 }
                 xbmc_scan(){
-                curl -s -d '{"jsonrpc":"2.0","method":"VideoLibrary.Scan","id":1}' -H 'content-type: application/json;' http://192.168.0.107:8585/jsonrpc?VideoLibrary.Scan
+                curl -s -d '{"jsonrpc":"2.0","method":"VideoLibrary.Scan","id":1}' -H 'content-type: application/json;' http://192.168.0.107:8080/jsonrpc?VideoLibrary.Scan
                 }
 
                 # Ausfuehren #
@@ -65,10 +59,10 @@ else
                 sortiere
                 logit "cleaning Clutter with FileBot"
                 cleaning
-                #logit "XBMC clean"
-                #xbmc_clean
-                #logit "XBMC scan"
-                #xbmc_scan
+                logit "XBMC clean"
+                xbmc_clean
+                logit "XBMC scan"
+                xbmc_scan
                 exit
         fi
-fi
+
