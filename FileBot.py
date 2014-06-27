@@ -30,7 +30,7 @@ class FileBot(Hook):
     __version__ = "0.41"
     __config__ = [("activated", "bool", "Activated", "False"),
 
-                  ("destination", "folder", "destination folder", ""),
+                  ("destination", "folder", "destination folder", "/media/5a24e136-09b9-48e1-95db-b44d5db3e28a/Medien"),
 
                   ("conflict", """skip;override""", "conflict handling", "override"),
 
@@ -46,9 +46,9 @@ class FileBot(Hook):
 
                   ("clean", """y;n""", "clean folder from clutter thats left behind", "y"),
 
-                  ("movie", "str", "movie destination (relative to destination or absolute)", ""),
+                  ("movie", "str", "movie destination (relative to destination or absolute)", "/media/5a24e136-09b9-48e1-95db-b44d5db3e28a/Medien/Movies/{n} ({y})/{n} ({y})"),
 
-                  ("series", "str", "series destination (relative to destination or absolute)", ""),
+                  ("series", "str", "series destination (relative to destination or absolute)", "/media/5a24e136-09b9-48e1-95db-b44d5db3e28a/Medien/TV Shows/{n}/Season {s.pad(2)}/{n} - {s00e00} - {t}"),
 
                   ("gmail", "str", "gmail login", ""),
                   ("gmailpw", "password", "gmail password", ""),
