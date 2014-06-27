@@ -69,7 +69,7 @@ class FileBot(Hook):
     def packageFinished(self, pypack):
         folder = self.core.config['general']['download_folder']
         folder = save_join(folder, pypack.folder)
-        if glob.glob1(folder,"*.mkv"): # generator, search immediate subdirectories
+        if glob.glob1(folder,"*.mkv"): 
             self.core.log.debug("Scheint wohl eine MKV!!!")
             self.Finished(folder)
 	else:
