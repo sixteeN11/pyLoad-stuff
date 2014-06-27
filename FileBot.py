@@ -50,14 +50,9 @@ class FileBot(Hook):
 
                   ("series", "str", "series destination (relative to destination or absolute)", "/media/5a24e136-09b9-48e1-95db-b44d5db3e28a/Medien/TV Shows/{n}/Season {s.pad(2)}/{n} - {s00e00} - {t}"),
 
-                  ("gmail", "str", "gmail login", ""),
-                  ("gmailpw", "password", "gmail password", ""),
-
                   ("excludeList", "str", "exclude list file", "pyload-amc.txt"),
 
                   ("pushover", "str", "pushover user key", ""),
-
-                  ("xbmc", "str", "xbmc hostname", ""),
 
                   ("reperror", """y;n""", "Report Error via Email", "n"),
 
@@ -145,14 +140,8 @@ class FileBot(Hook):
         if self.getConfig('ignore'):
             args.append('ignore=' + self.getConfig('ignore'))
 
-        if self.getConfig('gmail') and self.getConfig('gmailpw'):
-            args.append('gmail=' + self.getConfig('gmail') + ':' + self.getConfig('gmailpw'))
-
         if self.getConfig('pushover'):
             args.append('pushover=' + self.getConfig('pushover'))
-
-        if self.getConfig('xbmc'):
-            args.append('xbmc=' + self.getConfig('xbmc'))
 
         if self.getConfig('movie'):
             args.append('movieFormat=' + self.getConfig('movie'))
