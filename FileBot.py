@@ -30,7 +30,7 @@ class FileBot(Hook):
     __version__ = "0.41"
     __config__ = [("activated", "bool", "Activated", "False"),
 
-                  ("destination", "folder", "destination folder", "/media/5a24e136-09b9-48e1-95db-b44d5db3e28a/Medien"),
+                  ("destination", "folder", "destination folder", ""),
 
                   ("conflict", """skip;override""", "conflict handling", "override"),
 
@@ -46,9 +46,9 @@ class FileBot(Hook):
 
                   ("clean", """y;n""", "clean folder from clutter thats left behind", "y"),
 
-                  ("movie", "str", "movie destination (relative to destination or absolute)", "/media/5a24e136-09b9-48e1-95db-b44d5db3e28a/Medien/Movies/{n} ({y})/{n} ({y})"),
+                  ("movie", "str", "movie destination (relative to destination or absolute)", ""),
 
-                  ("series", "str", "series destination (relative to destination or absolute)", "/media/5a24e136-09b9-48e1-95db-b44d5db3e28a/Medien/TV Shows/{n}/Season {s.pad(2)}/{n} - {s00e00} - {t}"),
+                  ("series", "str", "series destination (relative to destination or absolute)", ""),
 
                   ("excludeList", "str", "exclude list file", "pyload-amc.txt"),
 
@@ -58,29 +58,43 @@ class FileBot(Hook):
 
                   ("filebot", "str", "filebot executable", "filebot"),
 
-                  ("exec", "str", "additional exec script", "cd / && ./filebot.sh "{file}"")]
+                  ("exec", "str", "additional exec script", "")]
 
     __description__ = "Automated renaming and sorting for tv episodes movies, music and animes"
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
     __author_mail__ = ("branko.wilhelm@gmail.com", "screver@gmail.com", "unwichtig@gmail.com")
 
-    event_list = ["packageFinished", "unrarFinished"]
+    #event_list = ["packageFinished", "unrarFinished", "allDownloadsFinished"]
+    event_map = {"packageFinished" : "package_startfb",
+                 "unrarFinished": "unrar_startfb"}
 
-    def packageFinished(self, pypack):
+    def package_startfb(self, pypack):
         folder = self.core.config['general']['download_folder']
         folder = save_join(folder, pypack.folder)
-        if glob.glob1(folder,"*.mkv"): 
-            self.core.log.debug("Scheint wohl eine MKV!!!")
-            self.Finished(folder)
-	else:
-            self.core.log.debug("keine mkv hier!")	
-			
-    def unrarFinished(self, folder, fname):
-        self.Finished(folder)
+        x=0
+        for root, dirs, files in os.walk(folder):
+            for name in files:
+                if (name.endswith((".avi", ".mkv"))) and x==0:
+                    self.core.log.debug("Hier ist eine MKV")
+                    x=+1
+                    self.Finished(folder)
+                else:
+                    self.core.log.debug("Keine MKV!!!")
+
+    def unrar_startfb(self, folder, fname):
+        x=0
+        for root, dirs, files in os.walk(folder):
+            for name in files:
+                if (name.endswith((".avi", ".mkv"))) and x==0:
+                    self.core.log.debug("Hier ist eine MKV")
+                    x=+1
+                    self.Finished(folder)
+                else:
+                    self.core.log.debug("Keine MKV!!!")
 
     def Finished(self, folder):
 
-        args = []  # http://www.filebot.net/forums/viewtopic.php?f=4&t=215&p=1561
+        args = []
 
         if self.getConfig('filebot'):
             args.append(self.getConfig('filebot'))
