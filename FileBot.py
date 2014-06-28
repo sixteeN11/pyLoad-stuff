@@ -71,27 +71,21 @@ class FileBot(Hook):
     def package_startfb(self, pypack):
         folder = self.core.config['general']['download_folder']
         folder = save_join(folder, pypack.folder)
-        x=0
         for root, dirs, files in os.walk(folder):
             for name in files:
-                if (name.endswith((".avi", ".mkv"))) and x==0:
+                if name.endswith((".avi", ".mkv")):
                     self.core.log.debug("Hier ist eine MKV")
-                    x=+1
                     self.Finished(folder)
-                else:
-                    self.core.log.debug("Keine MKV!!!")
-
+                break
+                    
     def unrar_startfb(self, folder, fname):
-        x=0
         for root, dirs, files in os.walk(folder):
             for name in files:
-                if (name.endswith((".avi", ".mkv"))) and x==0:
+                if name.endswith((".avi", ".mkv")):
                     self.core.log.debug("Hier ist eine MKV")
-                    x=+1
                     self.Finished(folder)
-                else:
-                    self.core.log.debug("Keine MKV!!!")
-
+                break
+            
     def Finished(self, folder):
 
         args = []
