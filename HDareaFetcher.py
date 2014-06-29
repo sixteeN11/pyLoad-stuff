@@ -10,7 +10,7 @@ class HDareaFetcher(Hook):
     __description__ = "Checks HD-AREA.org for new Movies. "
     __config__ = [("activated", "bool", "Activated", "False"),
                   ("interval", "int", "Check interval in minutes", "60"),
-                  ("quality", "str", "720p or 1080p", "720p"),
+                  ("quality", """720p;1080p""", "720p or 1080p", "720p"),
                   ("rating","float","Collector Rating","6.1"),
                   ("rating2","float","Queue Rating","8.0"),
                   ("rating3","float","Cinedubs Queue Rating","5.5"),
@@ -153,15 +153,7 @@ class HDareaFetcher(Hook):
                             f.write(link+"\n\n")
                             self.core.api.addPackage(title.encode("utf-8")+" IMDB: "+rating, link.split('"'), 1)               
                             self.core.log.info("HDArea: ! CinedubJackpot !:\t\t" +title+"... with rating:\t"+rating)
-                        else:
-                            if rating < self.getConfig("rating3") and site == 'Cinedubs':
-                                f.write(title+"\n")
-                                f.write(link+"\n\n")
-                                self.core.api.addPackage(title.encode("utf-8")+" IMDB: "+rating, link.split('"'), 0)               
-                                self.core.log.info("HDArea: !!! ACCEPTED !!!:\t\t" +title+"... with rating:\t"+rating)
-                            if not any(word in title for word in list) and site == 'Cinedubs':
-                                self.core.log.debug("HDArea: Quality ("+self.getConfig("quality")+") mismatch:\t\t" +title)
-               
+        
             else:
                 self.core.log.debug("ERROR: Array length mismatch!!!")         
 
