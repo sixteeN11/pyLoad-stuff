@@ -9,8 +9,8 @@ class HDareaFetcher(Hook):
     __version__ = "0.1"
     __description__ = "Checks HD-AREA.org for new Movies. "
     __config__ = [("activated", "bool", "Activated", "False"),
-                  ("interval", "int", "Check interval in minutes", "60"),
-                  ("quality", "str", "720p or 1080p", "720p"),
+                  ("interval", """30;60;120""", "Check interval in minutes", "60"),
+                  ("quality", """720p;1080p""", "720p or 1080p", "720p"),
                   ("rating","float","Collector Rating","6.1"),
                   ("rating2","float","Queue Rating","8.0"),
                   ("rating3","float","Cinedubs Queue Rating","5.5"),
