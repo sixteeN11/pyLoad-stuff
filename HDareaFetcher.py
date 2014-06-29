@@ -15,7 +15,7 @@ class HDareaFetcher(Hook):
                   ("rating2","float","Queue Rating","8.0"),
                   ("rating3","float","Cinedubs Queue Rating","5.5"),
                   ("min_year","long","Min Year","1990"),
-                  ("hoster", "str", "Preferred Hoster (seperated by ;)","uploaded;cloudzer")]
+                  ("hoster", "str", "Preferred Hoster (seperated by ;)","uplaoded;uploaded;cloudzer;filemonkey")]
     __author_name__ = ("Gutz-Pilz")
     __author_mail__ = ("")
 
