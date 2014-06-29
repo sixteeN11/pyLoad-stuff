@@ -9,13 +9,13 @@ class HDareaFetcher(Hook):
     __version__ = "0.1"
     __description__ = "Checks HD-AREA.org for new Movies. "
     __config__ = [("activated", "bool", "Activated", "False"),
-                  ("interval", """30;60;120""", "Check interval in minutes", "60"),
-                  ("quality", """720p;1080p""", "720p or 1080p", "720p"),
+                  ("interval", "int", "Check interval in minutes", "60"),
+                  ("quality", "str", "720p or 1080p", "720p"),
                   ("rating","float","Collector Rating","6.1"),
                   ("rating2","float","Queue Rating","8.0"),
                   ("rating3","float","Cinedubs Queue Rating","5.5"),
                   ("min_year","long","Min Year","1990"),
-                  ("hoster", "str", "Preferred Hoster (seperated by ;)","uplaoded;uploaded;cloudzer;filemonkey")]
+                  ("hoster", "str", "Preferred Hoster (seperated by ;)","uploaded;cloudzer")]
     __author_name__ = ("Gutz-Pilz")
     __author_mail__ = ("")
 
@@ -124,7 +124,7 @@ class HDareaFetcher(Hook):
                         list = [self.getConfig("quality")]
                         list2 = ['S0','s0','season','Season','DOKU','doku','Doku','s1','s2','s3','s4']
 
-                        if any(word in title for word in list) and rating > self.getConfig("rating"):
+                        if any(word in title for word in list) and rating > self.getConfig("rating") and site != 'Cinedubs':
                             if any (word in title for word in list2):
                                 self.core.log.debug("HDArea: REJECTED! not a Movie:\t\t" +title)
                             else:
@@ -154,12 +154,12 @@ class HDareaFetcher(Hook):
                             self.core.api.addPackage(title.encode("utf-8")+" IMDB: "+rating, link.split('"'), 1)               
                             self.core.log.info("HDArea: ! CinedubJackpot !:\t\t" +title+"... with rating:\t"+rating)
                         else:
-                            if rating < self.getConfig("rating3"):
+                            if rating < self.getConfig("rating3") and site == 'Cinedubs':
                                 f.write(title+"\n")
                                 f.write(link+"\n\n")
                                 self.core.api.addPackage(title.encode("utf-8")+" IMDB: "+rating, link.split('"'), 0)               
                                 self.core.log.info("HDArea: !!! ACCEPTED !!!:\t\t" +title+"... with rating:\t"+rating)
-                            if not any(word in title for word in list):
+                            if not any(word in title for word in list) and site == 'Cinedubs':
                                 self.core.log.debug("HDArea: Quality ("+self.getConfig("quality")+") mismatch:\t\t" +title)
                
             else:
