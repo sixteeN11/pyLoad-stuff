@@ -52,8 +52,6 @@ class FileBot(Hook):
 
                   ("excludeList", "str", "exclude list file", "pyload-amc.txt"),
 
-                  ("pushover", "str", "pushover user key", ""),
-
                   ("reperror", """y;n""", "Report Error via Email", "n"),
 
                   ("filebot", "str", "filebot executable", "filebot"),
@@ -69,23 +67,25 @@ class FileBot(Hook):
                  "unrarFinished": "unrar_startfb"}
 
     def package_startfb(self, pypack):
+        x=0
         folder = self.core.config['general']['download_folder']
         folder = save_join(folder, pypack.folder)
         for root, dirs, files in os.walk(folder):
             for name in files:
-                if name.endswith((".avi", ".mkv")):
+                if name.endswith((".avi", ".mkv")) and x<1:
                     self.core.log.debug("Hier ist eine MKV")
                     self.Finished(folder)
-                break
+                    x=+1
                     
     def unrar_startfb(self, folder, fname):
+        x=0
         for root, dirs, files in os.walk(folder):
             for name in files:
-                if name.endswith((".avi", ".mkv")):
+                if name.endswith((".avi", ".mkv")) and x<1:
                     self.core.log.debug("Hier ist eine MKV")
                     self.Finished(folder)
-                break
-            
+                    x=+1
+
     def Finished(self, folder):
 
         args = []
@@ -147,9 +147,6 @@ class FileBot(Hook):
 
         if self.getConfig('ignore'):
             args.append('ignore=' + self.getConfig('ignore'))
-
-        if self.getConfig('pushover'):
-            args.append('pushover=' + self.getConfig('pushover'))
 
         if self.getConfig('movie'):
             args.append('movieFormat=' + self.getConfig('movie'))
