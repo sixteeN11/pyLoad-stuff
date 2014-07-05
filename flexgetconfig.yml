@@ -4,12 +4,18 @@ templates:
       api: http://localhost:8888/api
       queue: yes
       username: admin
-      password: xxx
+      password: blubblub
       parse_url: no
-      hoster:
-        - UploadedTo
-        - UploadedNet
       multiple_hoster: yes
+    email:
+      from: xxxxx@gmail.com
+      to: uGpxxxxxxqRMHsebfUPwmi2a@api.pushover.net
+      smtp_host: smtp.gmail.com
+      smtp_port: 587
+      smtp_username: xxxx
+      smtp_password: xxxx
+      smtp_tls: yes
+      template: accepted
   tv_ger:
     series:
       settings:
@@ -26,7 +32,6 @@ templates:
         - Hannibal
         - Homeland
         - The Following
-        - Suits
         - Game of Thrones
         - Sherlock
         - White Collar
@@ -67,6 +72,11 @@ templates:
     imdb:
       min_score: 6.0
       min_year: 1990
+      reject_genres:
+        - News
+        - Sport
+        - Documentary
+    imdb_lookup: yes
     manipulate:
       - title:
           replace:
@@ -76,51 +86,35 @@ templates:
       reject:
       - \b(1080p)\b: {from: title}
       - \b(COMPLETE)\b: {from: title}
-      - \b(Remux)\b: {from: title}
       - \b(Eroti(c|k))\b: {from: title}
       - \b(sub(s|bed))\b: {from: title}
       - \b(XXX)\b: {from: title} 
       - \b(S\d{1,2})\b: {from: title}
       - \b(S\d+E\d+)\b: {from: title}
+      - \b(SBS)\b: {from: title}
 schedules:
   - tasks: '*'
     interval:
       minutes: 30
 tasks:
-  directdownload.tv:
-    template: tv_eng
-    inputs:
-      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=801107ed80ae2f52915110c6036f9f30&_render=rss
-    accept_all: no
-    manipulate:
-      - title:
-          replace:
-            regexp: '(.*)'
-            format: '[ENGLISCH] \1'
   serienjunkies:
     inputs:
-      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=801107ed80ae2f52915110c6036f9f30&_render=rss&page=1
-      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=801107ed80ae2f52915110c6036f9f30&_render=rss&page=2
-      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=801107ed80ae2f52915110c6036f9f30&_render=rss&page=3
-      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=801107ed80ae2f52915110c6036f9f30&_render=rss&page=4
-      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=801107ed80ae2f52915110c6036f9f30&_render=rss&page=5
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=11ed976a0103577b109a2d71ea61d51e&_render=rss&page=1
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=11ed976a0103577b109a2d71ea61d51e&_render=rss&page=2
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=11ed976a0103577b109a2d71ea61d51e&_render=rss&page=3
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=11ed976a0103577b109a2d71ea61d51e&_render=rss&page=4
     accept_all: no
     template: tv_ger
-  hd-area:
-    inputs:
-      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=3377a3dcc889527660e9065d7f008829&_render=rss&page=1
-    accept_all: no
-    template: movies
-    exists_movie: /media/5a24e136-09b9-48e1-95db-b44d5db3e28a/Medien/Movies
-    email:
-      from: xxxxxxxx
-      to: xxxxxxx
-      smtp_host: smtp.gmail.com
-      smtp_port: 587
-      smtp_username: xxxxx
-      smtp_password: xxxxx
-      smtp_tls: yes
-      template: accepted
+    #disable_builtins: [seen, remember_rejected]
+    #exists_series: /media/5a24e136-09b9-48e1-95db-b44d5db3e28a/Medien/TV Shows  
     serienjunkies:
       language: de
       hoster: ul
+  Movies_720p:
+    inputs:
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=e1269fa803ac490d60b63db37e98accd&_render=rss
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=3377a3dcc889527660e9065d7f008829&_render=rss
+    accept_all: no
+    template: movies
+    #exists_movie: /media/5a24e136-09b9-48e1-95db-b44d5db3e28a/Medien/Movies
+    #disable_builtins: [seen, remember_rejected]
