@@ -122,7 +122,7 @@ tasks:
   serienjunkies:
     priority: 4
     inputs:
-      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=801107ed80ae2f52915110c6036f9f30&_render=rss
+      - rss: http://pipes.yahoo.com/pipes/pipe.run?_id=11ed976a0103577b109a2d71ea61d51e&_render=rss
     accept_all: yes
     template: tv_ger
     exists_series: /media/5a24e136-09b9-48e1-95db-b44d5db3e28a/Medien/TV Shows  
