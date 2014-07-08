@@ -51,7 +51,7 @@ templates:
     manipulate:
       - title:
           replace:
-            regexp: (?i)\b(.fancut|.german|.uncut|.extended|.se|.dubbed|.web-dl|.dl|.dts|.dtsd|.ac3|.ac3d|.x264.*|.h264.*|.webrip|.bluray.*|.HDTV|.ac3md|.webhd|.720p|.proper.*|.7.1|.5.1)\b
+            regexp: (?i)\b(.fancut|.german|.uncut|.extended|.se|.dubbed|.web-dl|.dl|.dts|.dtsd|.ac3|.ac3(d|ld)|.x264.*|.h264.*|.webrip|.bluray.*|.HDTV|.ac3md|.webhd|.720p|.proper.*|.7.1|.5.1)\b
             format: ''
       - title:
           replace:
@@ -74,7 +74,7 @@ templates:
     manipulate:
       - title:
           replace:
-            regexp: (?i)\b(.fancut|.german|.uncut|.extended|.se|.dubbed|.web-dl|.dl|.dts|.dtsd|.ac3|.ac3d|.x264.*|.h264.*|.webrip|.bluray.*|.HDTV|.ac3md|.webhd|.720p|.proper.*|.7.1|.5.1)\b
+            regexp: (?i)\b(.fancut|.german|.uncut|.extended|.se|.dubbed|.web-dl|.dl|.dts|.dtsd|.ac3|.ac3(d|ld)|.x264.*|.h264.*|.webrip|.bluray.*|.HDTV|.ac3md|.webhd|.720p|.proper.*|.7.1|.5.1)\b
             format: ''
       - title:
           replace:
