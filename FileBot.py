@@ -17,7 +17,6 @@
 import subprocess
 import os
 import re
-import glob
 from os import listdir, access, X_OK, makedirs
 from os.path import join, exists, basename
 
@@ -27,7 +26,7 @@ from module.utils import save_join
 
 class FileBot(Hook):
     __name__ = "FileBot"
-    __version__ = "0.41"
+    __version__ = "0.1"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
@@ -67,26 +66,26 @@ class FileBot(Hook):
                  "unrarFinished": "unrar_startfb"}
 
     def package_startfb(self, pypack):
-        x=0
-        self.core.log.debug("FileBot-Hook: MKV-Checkup (package_finished)")
+	x=0
         folder = self.core.config['general']['download_folder']
         folder = save_join(folder, pypack.folder)
+	self.core.log.debug("FileBot-Hook: MKV-Checkup (package_finished)")	
         for root, dirs, files in os.walk(folder):
             for name in files:
                 if name.endswith((".avi", ".mkv")) and x<1:
-                    self.core.log.debug("Hier ist eine MKV")
+                    self.core.log.debug("Hier ist eine MKV/AVI")
                     self.Finished(folder)
-                    x=+1
-                    
+                    x=+1                   
+ 
     def unrar_startfb(self, folder, fname):
-        x=0
-        self.core.log.debug("FileBot-Hook: MKV-Checkup (unrar_finished)")
+	x=0
+	self.core.log.debug("FileBot-Hook: MKV-Checkup (unrar_finished)")
         for root, dirs, files in os.walk(folder):
             for name in files:
                 if name.endswith((".avi", ".mkv")) and x<1:
-                    self.core.log.debug("Hier ist eine MKV")
+                    self.core.log.debug("Hier ist eine MKV/AVI")
                     self.Finished(folder)
-                    x=+1
+                    x=+1                
 
     def Finished(self, folder):
 
