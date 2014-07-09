@@ -122,7 +122,7 @@ tasks:
       movies: watchlist
     imdb_list:
       list: watchlist
-      user_id: ur41805915
+      user_id: urxx805915
     rss: http://www.kino.de/rss/charts/
     rss: http://www.rottentomatoes.com/syndication/rss/top_movies.xml
     rss: http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topMovies/xml
