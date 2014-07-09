@@ -9,7 +9,7 @@ templates:
       multiple_hoster: no
 
     email:
-      active: True	  
+      active: True
     configure_series:
       settings:
         exact: yes
