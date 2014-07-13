@@ -30,7 +30,7 @@ class SJFetcher(Hook):
                   ("interval", "int", "Check interval in minutes", "60"),    
                   ("queue", "bool", "Move new shows directly to Queue", "False")]
     __author_name__ = ("wongdong, gutz-pilz")
-    __author_mail__ = ("wongdong@gmx.net")
+    __author_mail__ = ("mail@hannesmueller.com")
 
     def setup(self):
         self.interval = self.getConfig("interval") * 60
