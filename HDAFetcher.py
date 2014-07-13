@@ -26,11 +26,11 @@ class HDAFetcher(Hook):
     __version__ = "1.0"
     __description__ = "Checks your HDarea YahooRSS pipe for new movies. "
     __config__ = [("activated", "bool", "Activated", "True"),
-                  ("rssnumber", "str", "Your personal RSS identifier", "5bb58ffbccbb38923a19e3152ccf5364"),
+                  ("rssnumber", "str", "Your personal RSS identifier", "5bb58xxbccbb38923a19e3152ccf5364"),
                   ("interval", "int", "Check interval in minutes", "60"),    
                   ("queue", "bool", "Move new shows directly to Queue", "True")]
-    __author_name__ = ("wongdong, gutz-pilz")
-    __author_mail__ = ("wongdong@gmx.net, gutz-pilz")
+    __author_name__ = ("gutz-pilz")
+    __author_mail__ = ("unwichtig@gmail.com")
 
     def setup(self):
         self.interval = self.getConfig("interval") * 60
