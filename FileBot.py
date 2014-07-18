@@ -66,6 +66,7 @@ class FileBot(Hook):
                  "unrarFinished": "unrar_startfb"}
 
     def package_startfb(self, pypack):
+    	x = False
         folder = self.core.config['general']['download_folder']
         folder = save_join(folder, pypack.folder)
 	self.core.log.debug("FileBot-Hook: MKV-Checkup (package_finished)")	
@@ -73,23 +74,24 @@ class FileBot(Hook):
             for name in files:
                 if name.endswith((".rar", ".r0", ".r12")):
                     self.core.log.debug("Hier sind noch Arhive")
-                    break
-                else:
-                    self.core.log.debug("Hier sind keine Archive")
-                    self.Finished(folder)
-                    break
+                    x = True
+            break
+        if x == False:
+            self.core.log.debug("Hier sind keine Archive")
+            self.Finished(folder)
  
     def unrar_startfb(self, folder, fname):
+    	x = False
 	self.core.log.debug("FileBot-Hook: MKV-Checkup (unrar_finished)")
         for root, dirs, files in os.walk(folder):
             for name in files:
                 if name.endswith((".rar", ".r0", ".r12")):
                     self.core.log.debug("Hier sind noch Arhive")
-                    break
-                else:
-                    self.core.log.debug("Hier sind keine Archive")
-                    self.Finished(folder)
-                    break                   
+                    x = True
+            break
+        if x == False:
+            self.core.log.debug("Hier sind keine Archive")
+            self.Finished(folder)                   
 
     def Finished(self, folder):
 
