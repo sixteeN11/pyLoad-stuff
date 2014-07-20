@@ -75,6 +75,7 @@ class FileBot(Hook):
                 if name.endswith((".rar", ".r0", ".r12")):
                     self.core.log.debug("Hier sind noch Arhive")
                     x = True
+                break
             break
         if x == False:
             self.core.log.debug("Hier sind keine Archive")
@@ -88,6 +89,7 @@ class FileBot(Hook):
                 if name.endswith((".rar", ".r0", ".r12")):
                     self.core.log.debug("Hier sind noch Arhive")
                     x = True
+                break
             break
         if x == False:
             self.core.log.debug("Hier sind keine Archive")
