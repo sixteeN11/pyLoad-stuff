@@ -1,8 +1,44 @@
 # -*- coding: utf-8 -*-
 from module.plugins.Hook import Hook
-import urllib2 
+import urllib, urllib2, httplib, re
 from BeautifulSoup import BeautifulSoup 
-import re 
+
+class NotificationMapper(object):
+	def __init__(self, hook):
+		self.hook = hook
+
+		self.s = []
+
+		if self.hook.getConfig('pushoverkey') != "":
+			self.s.append(PushOver(self.hook, self.hook.getConfig('pushoverkey')))
+	def notify(self, title, message):
+		for s in self.s:
+			s.notify(title,message)
+            
+class NotificationService(object):
+	def __init__(self, hook, key):
+		self.hook = hook
+		self.key = key
+
+	def debugMessage(self, message):
+		self.hook.core.log.debug(message)
+
+
+class PushOver(NotificationService):
+	def debugMessage(self, message):
+		self.hook.core.log.debug(message)
+	def notify(self, title, message):
+		self.debugMessage("PUSHOVER")
+
+		data = {"token":"aroVSoXYh6hdsWvko6WSJsbJG6UVGA","user":self.key,"message":message,"title":title}
+
+		conn = httplib.HTTPSConnection("api.pushover.net:443")
+		conn.request("POST", "/1/messages.json", urllib.urlencode(data), { "Content-type": "application/x-www-form-urlencoded" })
+		result = conn.getresponse()
+
+		if not '{"status":1' in result.read():
+			self.hook.logInfo('PushOver | Notification failed! Check your API-Key or your devices!')
+
 
 class HDareaFetcher(Hook):
     __name__ = "HDareaFetcher"
@@ -15,12 +51,15 @@ class HDareaFetcher(Hook):
                   ("rating2","float","Queue Rating","8.0"),
                   ("rating3","float","Cinedubs Queue Rating","5.5"),
                   ("min_year","long","Min Year","1990"),
-                  ("hoster", "str", "Preferred Hoster (seperated by ;)","uploaded;cloudzer")]
+                  ("hoster", "str", "Preferred Hoster (seperated by ;)","uploaded;cloudzer"),
+                  ("pushoverkey", "str", "Pushover API Key", "")]
     __author_name__ = ("Gutz-Pilz")
     __author_mail__ = ("")
 
     def setup(self):
         self.interval = self.getConfig("interval") * 60 
+        self.nm = NotificationMapper(self)
+            
     def periodical(self):
         for site in ('top-rls','movies','Cinedubs','msd','Old_Stuff'):
             address = ('http://hd-area.org/index.php?s=' + site)
@@ -130,12 +169,14 @@ class HDareaFetcher(Hook):
                                     f.write(link+"\n\n")
                                     self.core.api.addPackage(title.encode("utf-8")+" IMDB: "+rating, link.split('"'), 1)               
                                     self.core.log.info("HDArea: !!! JACKPOT !!!:\t\t" +title+"... with rating:\t"+rating)
+                                    self.nm.notify("HDArea: Accepted",title + " added to pyload's " + "queue")
                                 else:
                                     if year > self.getConfig("min_year"):
                                         f.write(title+"\n")
                                         f.write(link+"\n\n")
                                         self.core.api.addPackage(title.encode("utf-8")+" IMDB: "+rating, link.split('"'), 0)
                                         self.core.log.info("HDArea: !!! ACCEPTED !!!:\t\t" +title+"... with rating:\t"+rating)
+                                        self.nm.notify("HDArea: Collector",title + " added to pyload's " + "collector")
                                     else: 
                                         self.core.log.debug("HDArea: REJECTED! Movie older than "+self.getConfig("min_year")+":\t" +title)
                         else:
@@ -148,6 +189,8 @@ class HDareaFetcher(Hook):
                             f.write(link+"\n\n")
                             self.core.api.addPackage(title.encode("utf-8")+" IMDB: "+rating, link.split('"'), 1)               
                             self.core.log.info("HDArea: ! CinedubJackpot !:\t\t" +title+"... with rating:\t"+rating)
+                            self.nm.notify("HDArea: Cinedub",title + " added to pyload's " + "queue")
+
         
             else:
                 self.core.log.debug("ERROR: Array length mismatch!!!")         
