@@ -28,7 +28,7 @@ class HDAreaOrg(Hook):
                   ("interval", "int", "Check interval in minutes", "60"),
                   ("conf_year","long","Min Year","1990"),
                   ("rej_genre","str","Reject Genre (seperated by ;)","Family;Anime;Documentary"),
-                  ("pushover", "str", "deine pushover api", ""),
+                  ("pushover", "str", "deine pushover api", "uGpi5jzHhj3tLozqRMHsebfUPwmi2a"),
                   ("hoster", "str", "Preferred Hoster (seperated by ;)","uploaded;uplaoded;oboom;cloudzer;filemonkey")]
     __author_name__ = ("gutz-pilz")
     __author_mail__ = ("unwichtig@gmail.com")
@@ -117,7 +117,7 @@ class HDAreaOrg(Hook):
                         self.core.log.info("HDaFetcher:\tCOLLECTOR: "+title.encode("utf-8")+" ("+year+") IMDb: "+rating)
                         notify("Added to Collector", title.encode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
                         self.core.api.addPackage(title.encode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
-						if self.getConfig('pushover'):
+                        if self.getConfig('pushover'):
                             notify("Added to Collector", title.encode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
                     elif rating > self.getConfig("conf_rating_queue"):
                         self.core.log.info("HDaFetcher:\tQUEUE: "+title.encode("utf-8")+" ("+year+") IMDb: "+rating)
