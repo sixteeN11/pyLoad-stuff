@@ -1,4 +1,4 @@
-[Hook] HDareaFetcher Plugin
+[Hook] HDAreaOrg.py
 ==============
 - standalone Moviefetcher
 - gets all Movies from HD-AR** and grab rating, title and genre from IMDb
@@ -8,14 +8,14 @@
 - decide which genre you'd not want to download
 
 
-[Hook] SJFetcher Plugin
+[Hook] SJ.py
 ==============
  - uses the serienjunk**s episode rss to fetch the latest episodes
  - decide which quality, language and hoster you prefer
  - create a SJ.txt in your pyload folder with all the seriesnames (each a new line)
 
 
-[Hook] FileBot Plugin
+[Hook] FileBot.py
 ==============
 This Hook uses the FileBot program from rednoah to have downloaded Movies/Series/Animes automatically renamed and sorted.
 
