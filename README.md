@@ -6,14 +6,14 @@
 - gets only your preferred hoster
 - 2 factor rating - one for directly adding it to the Queue and one for later decision to the Collector
 - decide which genre you'd not want to download
-
+- pushover notifications
 
 [Hook] SJ.py
 ==============
  - uses the serienjunk**s episode rss to fetch the latest episodes
  - decide which quality, language and hoster you prefer
  - create a SJ.txt in your pyload folder with all the seriesnames (each a new line)
-
+- pushover notifications
 
 [Hook] FileBot.py
 ==============
