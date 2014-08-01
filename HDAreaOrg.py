@@ -1,35 +1,35 @@
 from module.plugins.Hook import Hook 
-import feedparser, re, urllib, httplib 
-from module.network.RequestFactory import getURL 
+import feedparser, re, urllib2, urllib, httplib
 from BeautifulSoup import BeautifulSoup 
+from module.network.RequestFactory import getURL
 
-def getSeriesList(file):
-    titles = []
-    f = open(file, "rb")
-    for title in f.read().splitlines():
-        title = title.replace(" ", ".")
-        titles.append(title)
-    f.close()
-    return titles 
 def notify(title, message, api):
-    data = {"token":"aBGPe78hyxBKfRawhuGbzttrEaQ9rW","user":api,"message":message,"title":title}
+    data = {"token":"aHjfpv2HPi6CnGxbharCnFqpfzPHpe","user":api,"message":message,"title":title}
     conn = httplib.HTTPSConnection("api.pushover.net:443")
     conn.request("POST", "/1/messages.json", urllib.urlencode(data), { "Content-type": "application/x-www-form-urlencoded" })
-    result = conn.getresponse() 
+    result = conn.getresponse()
+def replaceUmlauts(title):
+    title = title.replace(unichr(228), "ae").replace(unichr(196), "Ae")
+    title = title.replace(unichr(252), "ue").replace(unichr(220), "Ue")
+    title = title.replace(unichr(246), "oe").replace(unichr(214), "Oe")
+    title = title.replace(unichr(223), "ss")
+    title = title.replace('&amp;', "&")
+    return titlepsu
 
-class SJ(Hook):
-    __name__ = "SJ"
-    __version__ = "1.1"
-    __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
+class HDAreaOrg(Hook):
+    __name__ = "HDAreaOrg"
+    __version__ = "1.0"
+    __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
-                  ("quality", """480p;720p;1080p""", "480p, 720p oder 1080p", "720p"),
-                  ("file", "file", "Datei mit Seriennamen", "SJ.txt"),
-                  ("rejectlist", "str", "Titel ablehnen mit (; getrennt)", "dd51;itunes"),
-                  ("language", """DEUTSCH;ENGLISCH""", "Sprache", "DEUTSCH"),
-                  ("interval", "int", "Interval", "60"),
-                  ("hoster", """ul;so;fm;cz""", "ul.to, filemonkey, cloudzer oder share-online", "ul"),
-                  ("pushover", "str", "deine pushover api", ""),
-                  ("queue", "bool", "Direkt in die Warteschlange?", "False")]
+                  ("quality", """720p;1080p""", "720p oder 1080p", "1080p"),
+                  ("rejectList", "str", "reject (seperated by ;)", "dd51;itunes;doku;avc;remux"),
+                  ("conf_rating_collector","float","Collector Rating","6.1"),
+                  ("conf_rating_queue","float","Queue Rating","7.1"),
+                  ("interval", "int", "Check interval in minutes", "60"),
+                  ("conf_year","long","Min Year","1990"),
+                  ("rej_genre","str","Reject Genre (seperated by ;)","Family;Anime;Documentary"),
+                  ("pushover", "str", "deine pushover api", "uGpi5jzHhj3tLozqRMHsebfUPwmi2a"),
+                  ("hoster", "str", "Preferred Hoster (seperated by ;)","uploaded;uplaoded;oboom;cloudzer;filemonkey")]
     __author_name__ = ("gutz-pilz")
     __author_mail__ = ("unwichtig@gmail.com")
 
@@ -37,61 +37,91 @@ class SJ(Hook):
         self.interval = self.getConfig("interval") * 60
 
     def periodical(self):
-        feed = feedparser.parse('http://serienjunkies.org/xml/feeds/episoden.xml')
-        qualityHD = '.*1080p.*|.*720p.*|.*1080i.*'
-        for post in feed.entries:
-            link = post.link
-            title = post.title
-            q_patternHD = re.match(qualityHD, title)
-            if q_patternHD is None:
-                if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")):
-                    title = re.sub('\[.*\] ', '', post.title)
-                    print 'SD'
-                    self.range_checkr(link,title)
+        for site in ('top-rls','movies','Cinedubs','msd','Old_Stuff'):
+            address = ('http://hd-area.org/index.php?s=' + site)
+            req_page = getURL(address)
+            soup = BeautifulSoup(req_page)
+            self.get_title(soup)
+
+    def get_title(self,soup1):
+        for all in soup1.findAll("div", {"class" : "topbox"}):
+            for title in all.findAll("div", {"class" : "title"}):
+                 self.filter(all, title.getText())
+  
+    def filter(self, all, title):
+        season = re.compile('.*S\d|\Sd{2}|eason\d|eason\d{2}.*')
+        if (self.getConfig("quality") in title) and not any (word.lower() in title.lower() for word in self.getConfig("rejectList").split(";")) and not season.match(title):
+            self.get_download(all, title)
+         
+    def get_download(self, soup1, title):
+        for title in soup1.findAll("div", {"class" : "title"}):
+             hda_url = title.a["href"]
+             req_page = getURL(hda_url)
+             soup_ = BeautifulSoup(req_page)
+             links = soup_.findAll("span", {"style":"display:inline;"})
+             for link in links:
+                 url = link.a["href"]
+                 for pref_hoster in self.getConfig("hoster"):
+                     if pref_hoster.lower() in link.text.lower():
+                         self.get_year(soup1, title, url)
+                     break
+
+    def get_year(self, soup1, title, dlLink):
+        imdb_url = soup1.find("div", {"class" : "boxrechts"})
+        imdb_url = unicode.join(u'',map(unicode,imdb_url))
+        imdb_url = re.sub(r'.*(imdb.*)"\starget.*', r'http://\1', imdb_url)
+        if "http" in imdb_url:
+            page = urllib2.urlopen(imdb_url).read()
+            imdb_site = BeautifulSoup(page)
+            year_pattern = re.compile(r'[0-9]{4}')
+            year = imdb_site.find("span", {"class" : "nobr"})
+            year = unicode.join(u'',map(unicode,year))
+            year = re.sub(r".*([0-9]{4}).*", r"\1", year)
+            orig_title = imdb_site.find("span", {"class" : "itemprop"}).getText()
+            title = replaceUmlauts(orig_title)
+            if year > self.getConfig("conf_year"):
+                self.get_genre(soup1, title, dlLink , year, imdb_url)
             else:
-                if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")):
-                    title = re.sub('\[.*\] ', '', post.title)
-                    self.range_checkr(link,title)
-                    print 'HD'
-                    
-    def range_checkr(self, link, title):
-        pattern = re.match(".*S\d{2}E\d{2}-\d{2}.*", title)
-        if pattern is not None:
-            range0 = re.sub(r".*S\d{2}E(\d{2}-\d{2}).*",r"\1", title)
-            number1 = re.sub(r"(\d{2})-\d{2}",r"\1", range0)
-            number2 = re.sub(r"\d{2}-(\d{2})",r"\1", range0)
-            title_cut = re.sub(r"(.*S\d{2}E).*",r"\1",title)
-            for count in range(int(number1),(int(number2)+1)):
-                NR = re.match("d\{2}", str(count))
-                if NR is not None:
-                    title1 = title_cut + str(count)
-                    self.parse_download(link, title1)
+                self.core.log.debug("HDaFetcher:\t"+title+" ("+year+"): to OLD")
+
+    def get_genre(self, soup1, title, dlLink, year, imdb_url):
+        page = urllib2.urlopen(imdb_url).read()
+        imdb_site = BeautifulSoup(page)
+        genres = []
+        get_genre = imdb_site.findAll("span", {"itemprop" : "genre"})
+        for genre in get_genre:
+            genre = genre.getText().encode("utf-8")
+            genres.append(genre)
+        if not any (word in genres for word in self.getConfig("rej_genre").split(";")):
+            self.get_rating(soup1, title, dlLink , year, imdb_url)
+        else:
+            self.core.log.debug("HDaFetcher:\t" + title + " ("+year+"): matches rejected GENRE")
+
+    def get_rating(self, soup1, title, dlLink, year, imdb_url):
+        for rating in soup1.findAll("div", {"class" : "boxrechts"}):
+            if 'IMDb' in rating.getText():
+                rating = unicode.join(u'',map(unicode,rating))
+                rating = re.sub(r".*(\d\.\d|\d\,\d).*", r"\1", rating)
+                rating = rating.replace(',','.')
+                rating = re.sub(r'(.*\s-/10)',r'0.1', rating)
+                rating = "".join(rating.split('\n'))
+                title = replaceUmlauts(title)
+                storage = self.getStorage(title)
+                if rating < self.getConfig("conf_rating_collector"):
+                    self.core.log.debug("HDaFetcher:\t"+title+" ("+year+") IMDb: "+rating+": rating to LOW")
+                if (storage == 'downloaded') and not (rating < self.getConfig("conf_rating_collector")):
+                    self.core.log.debug("HDaFetcher:\t"+title+" ("+year+")" + ": downloaded already")
                 else:
-                    title1 = title_cut +"0"+ str(count)
-                    self.parse_download(link, title1)
-        else:
-            self.parse_download(link, title)
-
-
-    def parse_download(self,series_url, search_title):
-        req_page = getURL(series_url)
-        soup = BeautifulSoup(req_page)
-        title = soup.find(text=re.compile(search_title))
-        if title:
-            links = title.parent.parent.findAll('a')
-            for link in links:
-                url = link['href']
-                pattern = '.*%s_.*' % self.getConfig("hoster")
-                if re.match(pattern, url):
-                    self.send_package(title, url)
-                 
-    def send_package(self, title, link):
-        storage = self.getStorage(title)
-        if storage == 'downloaded':
-            self.core.log.debug("SJFetcher:\t" + title + " already downloaded")
-        else:
-            self.core.log.info("SJFetcher:\tNEW EPISODE: " + title)
-            self.setStorage(title, 'downloaded')
-            if self.getConfig('pushover'):
-                notify("SJ: Added package",title.encode("utf-8"),self.getConfig("pushover"))
-            self.core.api.addPackage(title.encode("utf-8"), link.split('"'), 1 if self.getConfig("queue") else 0)
+                    self.setStorage(title, 'downloaded')
+                    if (rating < self.getConfig("conf_rating_queue")) and (rating > self.getConfig("conf_rating_collector")):
+                        self.core.log.info("HDaFetcher:\tCOLLECTOR: "+title.encode("utf-8")+" ("+year+") IMDb: "+rating)
+                        notify("Added to Collector", title.encode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
+                        self.core.api.addPackage(title.encode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
+                        if self.getConfig('pushover'):
+                            notify("Added to Collector", title.encode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
+                    elif rating > self.getConfig("conf_rating_queue"):
+                        self.core.log.info("HDaFetcher:\tQUEUE: "+title.encode("utf-8")+" ("+year+") IMDb: "+rating)
+                        notify("Added to Queue", title.encode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
+                        self.core.api.addPackage(title.encode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
+                        if self.getConfig('pushover'):
+                            notify("Added to Collector", title.encode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
