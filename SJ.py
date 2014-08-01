@@ -46,13 +46,11 @@ class SJ(Hook):
             if q_patternHD is None:
                 if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")):
                     title = re.sub('\[.*\] ', '', post.title)
-                    print 'SD'
                     self.range_checkr(link,title)
             else:
-                if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")):
+                if (self.getConfig("language") in title) and (self.getConfig("quality") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")):
                     title = re.sub('\[.*\] ', '', post.title)
                     self.range_checkr(link,title)
-                    print 'HD'
                     
     def range_checkr(self, link, title):
         pattern = re.match(".*S\d{2}E\d{2}-\d{2}.*", title)
