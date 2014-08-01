@@ -23,12 +23,12 @@ class SJ(Hook):
     __version__ = "1.0"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
-                  ("quality", """720p;1080p""", "720p od 1080p", "720p"),
+                  ("quality", """HDTV;720p;1080p""", "HDTV,720p,1080p", "720p"),
                   ("file", "file", "Datei mit Seriennamen", "SJ.txt"),
                   ("rejectlist", "str", "Titel ablehnen mit (; getrennt)", "dd51;itunes"),
                   ("language", """DEUTSCH;ENGLISCH""", "Sprache", "DEUTSCH"),
                   ("interval", "int", "Interval", "60"),
-                  ("hoster", """ul;fm;cz""", "ul.to, filemonkey or cloudzer", "ul"),    
+                  ("hoster", """ul;so;fm;cz""", "ul.to, filemonkey, cloudzer oder share-online", "ul"),    
                   ("pushover", "str", "deine pushover api", ""),
                   ("queue", "bool", "Direkt in die Warteschlange?", "False")]
     __author_name__ = ("gutz-pilz")
