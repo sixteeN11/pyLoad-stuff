@@ -62,13 +62,22 @@ class SJ(Hook):
                 NR = re.match("d\{2}", str(count))
                 if NR is not None:
                     title1 = title_cut + str(count)
-                    self.parse_download(link, title1)
+                    self.range_parse(link, title1)
                 else:
                     title1 = title_cut +"0"+ str(count)
-                    self.parse_download(link, title1)
+                    self.range_parse(link, title1)
         else:
             self.parse_download(link, title)
 
+    def range_parse(self,series_url, search_title):
+        req_page = getURL(series_url)
+        soup = BeautifulSoup(req_page)
+        titles = soup.findAll(text=re.compile(search_title))
+        for title in titles:
+           if (self.getConfig("quality") !='480p') and (self.getConfig("quality") in title):
+               self.parse_download(series_url, title)
+           if (self.getConfig("quality") =='480p') and not (('.720p.' in post.title) or ('.1080p.' in post.title)):
+               self.parse_download(series_url, title)
 
     def parse_download(self,series_url, search_title):
         req_page = getURL(series_url)
