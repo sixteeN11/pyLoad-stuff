@@ -41,13 +41,13 @@ class SJ(Hook):
         for post in feed.entries:
             link = post.link
             title = post.title
-            if (('.720p.' in post.title) or ('.1080p.' in post.title)) and (self.getConfig("quality") != '480p'):
-                if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").spl$
+            if self.getConfig("quality") != '480p':
+                if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")):
                     if self.getConfig("quality") in title:
                         title = re.sub('\[.*\] ', '', post.title)
                         self.range_checkr(link,title)
-            if not (('.720p.' in post.title) or ('.1080p.' in post.title)) and (self.getConfig("quality") == '480p'):
-                if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").spl$
+            else:
+                if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")):
                     title = re.sub('\[.*\] ', '', post.title)
                     self.range_checkr(link,title)
                     
@@ -69,14 +69,15 @@ class SJ(Hook):
         else:
             self.parse_download(link, title)
 
+
     def range_parse(self,series_url, search_title):
         req_page = getURL(series_url)
         soup = BeautifulSoup(req_page)
         titles = soup.findAll(text=re.compile(search_title))
         for title in titles:
-           if (self.getConfig("quality") !='480p') and (self.getConfig("quality") in title):
+           if (self.getConfig("quality") !='480p') and (self.getConfig("quality") in title): 
                self.parse_download(series_url, title)
-           if (self.getConfig("quality") =='480p') and not (('.720p.' in post.title) or ('.1080p.' in post.title)):
+           if (self.getConfig("quality") =='480p') and not (('.720p.' in post.title) or ('.1080p.' in post.title)):               
                self.parse_download(series_url, title)
 
     def parse_download(self,series_url, search_title):
