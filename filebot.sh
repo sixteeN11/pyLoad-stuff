@@ -1,8 +1,4 @@
 #!/bin/bash
-# Globale Variablen #
-BaseDir=/media/5a24e136-09b9-48e1-95db-b44d5db3e28a
-DownloadDir=${BaseDir}/Medien/Downloads
-MediaDir=${BaseDir}/Medien
 
 ## Log
 DATE=$(date +%d.%m.%Y\ %H:%M:%S)
@@ -12,7 +8,6 @@ LogFile=/root/.pyload/Logs/log.txt
 ##tmpFolder=$MediaDir/tmp
 
 ## String Manipulation
-mailtitle_ext=${1##*/}
 mailtitle=${mailtitle_ext%.*}
 pfad_00=${1%/*.mkv}
 pfad=${pfad_00##*/Medien}
@@ -36,7 +31,7 @@ pfad=${pfad_00##*/Medien}
         docker run --net=host -v /root/xbmc-server/xbmcdata:/opt/xbmc-server/portable_data --entrypoint=/opt/xbmc-server/xbmcVideoLibraryScan wernerb/docker-xbmc-server --no-test --nolirc -p
 
         echo "$logline E-Mail senden" | tee -a $LogFile
-        echo -e "Verschoben nach:\t ~/NAS_HD$pfad/\n\nGroesse:\t$Final2 MB\n\n\nSincerly\nyour lovely NAS" | mailx -s "INFO: $mailtitle runtergeladen" hannes.mueller87@gmail.com;
+        echo -e "Verschoben nach:\t ~/NAS_HD$pfad/\n\nGroesse:\t$Final2 MB\n\n\nSincerly\nyour lovely NAS" | mailx -s "INFO: $mailtitle runtergeladen" hfdgdg7@gmail.com;
 
         echo "$logline Lösche leere Ordner" | tee -a $LogFile
         cd /root/.pyload/Downloads
