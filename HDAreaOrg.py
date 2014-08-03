@@ -114,14 +114,14 @@ class HDAreaOrg(Hook):
                 else:
                     self.setStorage(title, 'downloaded')
                     if (rating < self.getConfig("conf_rating_queue")) and (rating > self.getConfig("conf_rating_collector")):
-                        self.core.log.info("HDaFetcher:\tCOLLECTOR: "+title.encode("utf-8")+" ("+year+") IMDb: "+rating)
-                        notify("Added to Collector", title.encode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
-                        self.core.api.addPackage(title.encode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
+                        self.core.log.info("HDaFetcher:\tCOLLECTOR: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
+                        notify("Added to Collector", title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
+                        self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
                         if self.getConfig('pushover'):
-                            notify("Added to Collector", title.encode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
+                            notify("Added to Collector", title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
                     elif rating > self.getConfig("conf_rating_queue"):
-                        self.core.log.info("HDaFetcher:\tQUEUE: "+title.encode("utf-8")+" ("+year+") IMDb: "+rating)
-                        notify("Added to Queue", title.encode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
-                        self.core.api.addPackage(title.encode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
+                        self.core.log.info("HDaFetcher:\tQUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
+                        notify("Added to Queue", title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
+                        self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
                         if self.getConfig('pushover'):
-                            notify("Added to Collector", title.encode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
+                            notify("Added to Collector", title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
