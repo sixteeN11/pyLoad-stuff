@@ -14,7 +14,7 @@ def replaceUmlauts(title):
     title = title.replace(unichr(246), "oe").replace(unichr(214), "Oe")
     title = title.replace(unichr(223), "ss")
     title = title.replace('&amp;', "&")
-    return titlepsu
+    return title
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
