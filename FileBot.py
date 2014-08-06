@@ -93,7 +93,7 @@ class FileBot(Hook):
             break
         if x == False:
             self.core.log.debug("Hier sind keine Archive")
-            self.Finished(folder)                   
+            self.Finished(folder)                
 
     def Finished(self, folder):
 
