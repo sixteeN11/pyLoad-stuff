@@ -4,7 +4,7 @@ from BeautifulSoup import BeautifulSoup
 from module.network.RequestFactory import getURL 
 
 def notify(title, message, api):
-    data = {"token":"aHjfpv2HPi6CnGxbharCnFqpfzPHpe","user":api,"message":message,"title":title}
+    data = {"token":"aD1MxoNvGY1S5zaTM7rGjhDkXDpoS2","user":api,"message":message,"title":title}
     conn = httplib.HTTPSConnection("api.pushover.net:443")
     conn.request("POST", "/1/messages.json", urllib.urlencode(data), { "Content-type": "application/x-www-form-urlencoded" })
     result = conn.getresponse()
