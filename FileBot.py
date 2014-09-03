@@ -83,7 +83,7 @@ class FileBot(Hook):
  
     def unrar_startfb(self, folder, fname):
         x = False
-    self.core.log.debug("FileBot-Hook: MKV-Checkup (unrar_finished)")
+        self.core.log.debug("FileBot-Hook: MKV-Checkup (unrar_finished)")
         for root, dirs, files in os.walk(folder):
             for name in files:
                 if name.endswith((".rar", ".r0", ".r12")):
