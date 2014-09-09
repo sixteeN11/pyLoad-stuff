@@ -47,7 +47,7 @@ class SJ(Hook):
                         title = re.sub('\[.*\] ', '', post.title)
                         self.range_checkr(link,title)
             else:
-                if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")):
+                if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";") and not ('720p' in title) and not ('1080p' in title):):
                     title = re.sub('\[.*\] ', '', post.title)
                     self.range_checkr(link,title)
                     
