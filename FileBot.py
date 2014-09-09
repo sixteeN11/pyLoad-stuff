@@ -32,6 +32,8 @@ class FileBot(Hook):
                   ("destination", "folder", "destination folder", ""),
 
                   ("conflict", """skip;override""", "conflict handling", "override"),
+                  
+                  ("no-xattr", "bool", "no-xattr", "False")
 
                   ("action", """move;copy;test""", "copy, move or test(dry run)", "move"),
 
@@ -116,6 +118,9 @@ class FileBot(Hook):
 
         args.append('--conflict')
         args.append(self.getConfig('conflict'))
+        
+        if self.getConfig('no-xattr') is True:
+            args.append(" -no-xattr")
 
         args.append('--action')
         args.append(self.getConfig('action'))
