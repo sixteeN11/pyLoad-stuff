@@ -1,11 +1,11 @@
 from module.plugins.Hook import Hook 
-import feedparser, re, urllib, httplib 
+import feedparser, re, urllib, httplib, codecs
 from module.network.RequestFactory import getURL 
 from BeautifulSoup import BeautifulSoup 
 
 def getSeriesList(file):
     titles = []
-    f = open(file, "rb")
+    f = codecs.open(file, "rb", "utf-8")
     for title in f.read().splitlines():
         title = title.replace(" ", ".")
         titles.append(title)
