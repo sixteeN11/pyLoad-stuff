@@ -15,35 +15,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import subprocess
-import os
-import re
-from os import listdir, access, X_OK, makedirs
-from os.path import join, exists, basename
 
 from module.plugins.Hook import Hook
-from module.utils import save_join
 
 
 class FileBot(Hook):
     __name__ = "FileBot"
-    __version__ = "0.41"
+    __version__ = "0.11"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
 
                   ("conflict", """skip;override""", "conflict handling", "override"),
-                  
-                  ("no-xattr", "bool", "no-xattr", "False")
 
                   ("action", """move;copy;test""", "copy, move or test(dry run)", "move"),
 
-                  ("lang", "str", "language (en, de, fr, es, etc)", "de"),
+                  ("lang", "str", "language (en, de, fr, es, etc)", ""),
 
-                  ("subtitles", "str", "subtitles language (en, de, fr, es, etc)", "de"),
+                  ("subtitles", "str", "subtitles language (en, de, fr, es, etc)", ""),
+
+                  ("unsorted", """y;n""", "sort out files that cannot be proceed to $destination/unsorted/", "n"),
 
                   ("ignore", "str", "ignore files (regex)", ""),
 
-                  ("artwork", """y;n""", "download artwork", "y"),
+                  ("artwork", """y;n""", "download artwork", "n"),
 
                   ("clean", """y;n""", "clean folder from clutter thats left behind", "y"),
 
@@ -51,55 +46,53 @@ class FileBot(Hook):
 
                   ("series", "str", "series destination (relative to destination or absolute)", ""),
 
+                  ("music", "str", "music destination (relative to destination or absolute)", ""),
+
+                  ("anime", "str", "anime destination (relative to destination or absolute)", ""),
+
+                  ("gmail", "str", "gmail login (without @gmail.com)", ""),
+                  ("gmailpw", "password", "gmail password", ""),
+
+                  ("mail", "str", "mail (host:port:from)", ""),
+                  ("mailto", "str", "mailto", ""),
+
                   ("excludeList", "str", "exclude list file", "pyload-amc.txt"),
 
-                  ("reperror", """y;n""", "Report Error via Email", "n"),
+                  ("myepisodes", "str", "myepisodes login", " "),
+                  ("myepisodespw", "password", "myepisodes password", " "),
+
+                  ("pushover", "str", "pushover user key", ""),
+
+                  ("pushbullet", "str", "pushbullet api key", ""),
+
+                  ("xbmc", "str", "xbmc hostname", ""),
+
+                  ("plex", "str", "plex hostname", ""),
+
+                  ("reportError", """y;n""", "report error via email", "n"),
 
                   ("filebot", "str", "filebot executable", "filebot"),
 
-                  ("exec", "str", "additional exec script", "")]
+                  ("exec", "str", "additional exec script", ""),
 
-    __description__ = "Automated renaming and sorting for tv episodes movies, music and animes"
+                  ("storeReport", """y;n""", "save reports to local filesystem", "n")]
+
+    __description__ = "automated renaming and sorting for tv episodes movies, music and animes"
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
     __author_mail__ = ("branko.wilhelm@gmail.com", "screver@gmail.com", "unwichtig@gmail.com")
 
-    #event_list = ["packageFinished", "unrarFinished", "allDownloadsFinished"]
-    event_map = {"packageFinished" : "package_startfb",
-                 "unrarFinished": "unrar_startfb"}
+    event_list = ["unrarFinished", "archive_extracted"]
 
-    def package_startfb(self, pypack):
-        x = False
-        folder = self.core.config['general']['download_folder']
-        folder = save_join(folder, pypack.folder)
-        self.core.log.debug("FileBot-Hook: MKV-Checkup (package_finished)") 
-        for root, dirs, files in os.walk(folder):
-            for name in files:
-                if name.endswith((".rar", ".r0", ".r12")):
-                    self.core.log.debug("Hier sind noch Arhive")
-                    x = True
-                break
-            break
-        if x == False:
-            self.core.log.debug("Hier sind keine Archive")
-            self.Finished(folder)
- 
-    def unrar_startfb(self, folder, fname):
-        x = False
-        self.core.log.debug("FileBot-Hook: MKV-Checkup (unrar_finished)")
-        for root, dirs, files in os.walk(folder):
-            for name in files:
-                if name.endswith((".rar", ".r0", ".r12")):
-                    self.core.log.debug("Hier sind noch Arhive")
-                    x = True
-                break
-            break
-        if x == False:
-            self.core.log.debug("Hier sind keine Archive")
-            self.Finished(folder)                
+    def archive_extracted(self, pyfile, folder, fname, extracted_files):
+        self.Finished(folder)
+
+    def unrarFinished(self, folder, fname):
+        self.Finished(folder)
 
     def Finished(self, folder):
+        args = []  # http://www.filebot.net/forums/viewtopic.php?f=4&t=215&p=1561
 
-        args = []
+        self.logDebug(folder)
 
         if self.getConfig('filebot'):
             args.append(self.getConfig('filebot'))
@@ -118,9 +111,6 @@ class FileBot(Hook):
 
         args.append('--conflict')
         args.append(self.getConfig('conflict'))
-        
-        if self.getConfig('no-xattr') is True:
-            args.append(" -no-xattr")
 
         args.append('--action')
         args.append(self.getConfig('action'))
@@ -145,13 +135,22 @@ class FileBot(Hook):
         if self.getConfig('clean'):
             args.append('clean=' + self.getConfig('clean'))
 
+        if self.getConfig('mail'):
+            args.append('mail=' + self.getConfig('mail'))
+
+        if self.getConfig('mailto'):
+            args.append('mailto=' + self.getConfig('mailto'))
+
         args.append('skipExtract=y')
 
         if self.getConfig('excludeList'):
             args.append('excludeList=' + self.getConfig('excludeList'))
 
-        if self.getConfig('reperror'):
-            args.append('reportError=' + self.getConfig('reperror'))
+        if self.getConfig('reportError'):
+            args.append('reportError=' + self.getConfig('reportError'))
+
+        if self.getConfig('storeReport'):
+            args.append('storeReport=' + self.getConfig('storeReport'))
 
         if self.getConfig('artwork'):
             args.append('artwork=' + self.getConfig('artwork'))
@@ -162,17 +161,46 @@ class FileBot(Hook):
         if self.getConfig('ignore'):
             args.append('ignore=' + self.getConfig('ignore'))
 
+        if self.getConfig('unsorted'):
+            args.append('unsorted=' + self.getConfig('unsorted'))
+
+        if self.getConfig('gmail') and self.getConfig('gmailpw'):
+            args.append('gmail=' + self.getConfig('gmail') + ':' + self.getConfig('gmailpw'))
+
+        if self.getConfig('myepisodes') and self.getConfig('myepisodespw'):
+            args.append('myepisodes=' + self.getConfig('myepisodes') + ':' + self.getConfig('myepisodespw'))
+
+        if self.getConfig('pushover'):
+            args.append('pushover=' + self.getConfig('pushover'))
+
+        if self.getConfig('pushbullet'):
+            args.append('pushbullet=' + self.getConfig('pushbullet'))
+
+        if self.getConfig('xbmc'):
+            args.append('xbmc=' + self.getConfig('xbmc'))
+
+        if self.getConfig('plex'):
+            args.append('plex=' + self.getConfig('plex'))
+
         if self.getConfig('movie'):
             args.append('movieFormat=' + self.getConfig('movie'))
 
         if self.getConfig('series'):
             args.append('seriesFormat=' + self.getConfig('series'))
 
+        if self.getConfig('music'):
+            args.append('musicFormat=' + self.getConfig('music'))
+        else:
+            args.append('music=n')
+
+        if self.getConfig('anime'):
+            args.append('animeFormat=' + self.getConfig('anime'))
+
         args.append(folder)
 
         try:
             subprocess.Popen(args, bufsize=-1)
             self.logInfo('executed')
+            self.logDebug(' '.join(args))
         except Exception, e:
             self.logError(str(e))
-
