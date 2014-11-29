@@ -1,7 +1,8 @@
 from module.plugins.Hook import Hook 
 import feedparser, re, urllib, httplib, codecs
 from module.network.RequestFactory import getURL 
-from BeautifulSoup import BeautifulSoup 
+from BeautifulSoup import BeautifulSoup
+import smtplib
 
 def getSeriesList(file):
     titles = []
@@ -11,15 +12,40 @@ def getSeriesList(file):
         titles.append(title)
     f.close()
     return titles 
+    
 def notify(title, message, api):
     data = {"token":"aBGPe78hyxBKfRawhuGbzttrEaQ9rW","user":api,"message":message,"title":title}
     conn = httplib.HTTPSConnection("api.pushover.net:443")
     conn.request("POST", "/1/messages.json", urllib.urlencode(data), { "Content-type": "application/x-www-form-urlencoded" })
-    result = conn.getresponse() 
+    result = conn.getresponse()
+    
+def send_mail(text):
+    """Tested with googlemail.com and bitmessage.ch. It should work with all mailservices which provide SSL access.""" 
+    serveraddr = ''
+    serverport = '465'
+    username = ''
+    password = ''
+    fromaddr = ''
+    toaddrs  = ''
+    
+    if toaddrs == "":
+        return
+
+    subject = "pyLoad: Package added!"
+    msg = "\n".join(text)
+
+    header = "To: %s\nFrom:%s\nSubject:%s\n" %(toaddrs,fromaddr,subject)
+    msg = header + "\n" + msg
+
+    server = smtplib.SMTP_SSL(serveraddr,serverport)
+    server.ehlo()
+    server.login(username,password)
+    server.sendmail(fromaddr, toaddrs, msg)
+    server.quit() 
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.02"
+    __version__ = "1.03"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
@@ -42,8 +68,7 @@ class SJ(Hook):
         
         pattern = "|".join(getSeriesList(self.getConfig("file"))).lower()
         reject = self.getConfig("rejectlist").replace(";","|").lower() if len(self.getConfig("rejectlist")) > 0 else "^unmatchable$"
-        quality = self.getConfig("quality")
-        language = self.getConfig("language")
+        self.added_items = []
         
         for post in feed.entries:
             link = post.link
@@ -72,6 +97,9 @@ class SJ(Hook):
                     if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")) and not ('720p' in title) and not ('1080p' in title):
                         title = re.sub('\[.*\] ', '', post.title)
                         self.range_checkr(link,title)
+                        
+        send_mail(self.added_items) if len(self.added_items) > 0 else True
+            
                     
     def range_checkr(self, link, title):
         pattern = re.match(".*S\d{2}E\d{2}-\d{2}.*", title)
@@ -90,6 +118,7 @@ class SJ(Hook):
                     self.range_parse(link, title1)
         else:
             self.parse_download(link, title)
+
 
     def range_parse(self,series_url, search_title):
         req_page = getURL(series_url)
@@ -123,3 +152,4 @@ class SJ(Hook):
             if self.getConfig('pushover'):
                 notify("SJ: Added package",title.encode("utf-8"),self.getConfig("pushover"))
             self.core.api.addPackage(title.encode("utf-8"), link.split('"'), 1 if self.getConfig("queue") else 0)
+            self.added_items.append(title.encode("utf-8"))
