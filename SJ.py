@@ -45,7 +45,7 @@ def send_mail(text):
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.03"
+    __version__ = "1.04"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
@@ -76,6 +76,9 @@ class SJ(Hook):
             
             if self.getConfig("regex"):
                 m = re.search(pattern,title.lower())
+                if not m and not "720p" in title and not "1080p" in title:
+                    m = re.search(pattern.replace("480p","."),title.lower())
+                    
                 if m:
                     m = re.search(reject,title.lower())
                     if m:
@@ -83,8 +86,7 @@ class SJ(Hook):
                         continue
                     title = re.sub('\[.*\] ', '', post.title)
                     self.range_checkr(link,title)
-                    
-            
+                                
             else:
 
                 if self.getConfig("quality") != '480p':
