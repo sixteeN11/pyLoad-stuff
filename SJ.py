@@ -1,7 +1,8 @@
 from module.plugins.Hook import Hook 
 import feedparser, re, urllib, httplib, codecs
 from module.network.RequestFactory import getURL 
-from BeautifulSoup import BeautifulSoup 
+from BeautifulSoup import BeautifulSoup
+import smtplib
 
 def getSeriesList(file):
     titles = []
@@ -11,17 +12,43 @@ def getSeriesList(file):
         titles.append(title)
     f.close()
     return titles 
+    
 def notify(title, message, api):
     data = {"token":"aBGPe78hyxBKfRawhuGbzttrEaQ9rW","user":api,"message":message,"title":title}
     conn = httplib.HTTPSConnection("api.pushover.net:443")
     conn.request("POST", "/1/messages.json", urllib.urlencode(data), { "Content-type": "application/x-www-form-urlencoded" })
-    result = conn.getresponse() 
+    result = conn.getresponse()
+    
+def send_mail(text):
+    """Tested with googlemail.com and bitmessage.ch. It should work with all mailservices which provide SSL access.""" 
+    serveraddr = ''
+    serverport = '465'
+    username = ''
+    password = ''
+    fromaddr = ''
+    toaddrs  = ''
+    
+    if toaddrs == "":
+        return
+
+    subject = "pyLoad: Package added!"
+    msg = "\n".join(text)
+
+    header = "To: %s\nFrom:%s\nSubject:%s\n" %(toaddrs,fromaddr,subject)
+    msg = header + "\n" + msg
+
+    server = smtplib.SMTP_SSL(serveraddr,serverport)
+    server.ehlo()
+    server.login(username,password)
+    server.sendmail(fromaddr, toaddrs, msg)
+    server.quit() 
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.0"
+    __version__ = "1.05"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
+                  ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
                   ("quality", """480p;720p;1080p""", "480p, 720p oder 1080p", "720p"),
                   ("file", "file", "Datei mit Seriennamen", "SJ.txt"),
                   ("rejectlist", "str", "Titel ablehnen mit (; getrennt)", "dd51;itunes"),
@@ -30,26 +57,54 @@ class SJ(Hook):
                   ("hoster", """ul;so;fm;cz""", "ul.to, filemonkey, cloudzer oder share-online", "ul"),
                   ("pushover", "str", "deine pushover api", ""),
                   ("queue", "bool", "Direkt in die Warteschlange?", "False")]
-    __author_name__ = ("gutz-pilz")
-    __author_mail__ = ("unwichtig@gmail.com")
+    __author_name__ = ("gutz-pilz","zapp-brannigan")
+    __author_mail__ = ("unwichtig@gmail.com","")
 
     def setup(self):
         self.interval = self.getConfig("interval") * 60
 
     def periodical(self):
         feed = feedparser.parse('http://serienjunkies.org/xml/feeds/episoden.xml')
+        
+        self.pattern = "|".join(getSeriesList(self.getConfig("file"))).lower()
+        reject = self.getConfig("rejectlist").replace(";","|").lower() if len(self.getConfig("rejectlist")) > 0 else "^unmatchable$"
+        self.quality = self.getConfig("quality")
+        self.added_items = []
+        
         for post in feed.entries:
             link = post.link
             title = post.title
-            if self.getConfig("quality") != '480p':
-                if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")):
-                    if self.getConfig("quality") in title:
-                        title = re.sub('\[.*\] ', '', post.title)
-                        self.range_checkr(link,title)
-            else:
-                if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")) and not ('720p' in title) and not ('1080p' in title):
+            
+            if self.getConfig("regex"):
+                m = re.search(self.pattern,title.lower())
+                if not m and not "720p" in title and not "1080p" in title:
+                    m = re.search(self.pattern.replace("480p","."),title.lower())
+                    self.quality = "480p"
+                if m:
+                    if "720p" in title.lower(): self.quality = "720p"
+                    if "1080p" in title.lower(): self.quality = "1080p"
+                    m = re.search(reject,title.lower())
+                    if m:
+                        self.core.log.debug("SJFetcher - Abgelehnt: " + title)
+                        continue
                     title = re.sub('\[.*\] ', '', post.title)
                     self.range_checkr(link,title)
+                                
+            else:
+                
+                if self.getConfig("quality") != '480p':
+                    if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")):
+                        if self.getConfig("quality") in title:
+                            title = re.sub('\[.*\] ', '', post.title)
+                            self.range_checkr(link,title)
+        
+                else:
+                    if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")) and not ('720p' in title) and not ('1080p' in title):
+                        title = re.sub('\[.*\] ', '', post.title)
+                        self.range_checkr(link,title)
+                        
+        send_mail(self.added_items) if len(self.added_items) > 0 else True
+            
                     
     def range_checkr(self, link, title):
         pattern = re.match(".*S\d{2}E\d{2}-\d{2}.*", title)
@@ -75,10 +130,11 @@ class SJ(Hook):
         soup = BeautifulSoup(req_page)
         titles = soup.findAll(text=re.compile(search_title))
         for title in titles:
-           if (self.getConfig("quality") !='480p') and (self.getConfig("quality") in title): 
+           if self.quality !='480p' and self.quality in title: 
                self.parse_download(series_url, title)
-           if (self.getConfig("quality") =='480p') and not (('.720p.' in post.title) or ('.1080p.' in post.title)):               
+           if self.quality =='480p' and not (('.720p.' in title) or ('.1080p.' in title)):               
                self.parse_download(series_url, title)
+
 
     def parse_download(self,series_url, search_title):
         req_page = getURL(series_url)
@@ -95,10 +151,11 @@ class SJ(Hook):
     def send_package(self, title, link):
         storage = self.getStorage(title)
         if storage == 'downloaded':
-            self.core.log.debug("SJFetcher:\t" + title + " already downloaded")
+            self.core.log.debug("SJFetcher - " + title + " already downloaded")
         else:
-            self.core.log.info("SJFetcher:\tNEW EPISODE: " + title)
+            self.core.log.info("SJFetcher - NEW EPISODE: " + title)
             self.setStorage(title, 'downloaded')
             if self.getConfig('pushover'):
                 notify("SJ: Added package",title.encode("utf-8"),self.getConfig("pushover"))
             self.core.api.addPackage(title.encode("utf-8"), link.split('"'), 1 if self.getConfig("queue") else 0)
+            self.added_items.append(title.encode("utf-8"))
