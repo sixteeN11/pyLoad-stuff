@@ -45,7 +45,7 @@ def send_mail(text):
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.04"
+    __version__ = "1.05"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
@@ -66,8 +66,9 @@ class SJ(Hook):
     def periodical(self):
         feed = feedparser.parse('http://serienjunkies.org/xml/feeds/episoden.xml')
         
-        pattern = "|".join(getSeriesList(self.getConfig("file"))).lower()
+        self.pattern = "|".join(getSeriesList(self.getConfig("file"))).lower()
         reject = self.getConfig("rejectlist").replace(";","|").lower() if len(self.getConfig("rejectlist")) > 0 else "^unmatchable$"
+        self.quality = self.getConfig("quality")
         self.added_items = []
         
         for post in feed.entries:
@@ -75,11 +76,13 @@ class SJ(Hook):
             title = post.title
             
             if self.getConfig("regex"):
-                m = re.search(pattern,title.lower())
+                m = re.search(self.pattern,title.lower())
                 if not m and not "720p" in title and not "1080p" in title:
-                    m = re.search(pattern.replace("480p","."),title.lower())
-                    
+                    m = re.search(self.pattern.replace("480p","."),title.lower())
+                    self.quality = "480p"
                 if m:
+                    if "720p" in title.lower(): self.quality = "720p"
+                    if "1080p" in title.lower(): self.quality = "1080p"
                     m = re.search(reject,title.lower())
                     if m:
                         self.core.log.debug("SJFetcher - Abgelehnt: " + title)
@@ -88,7 +91,7 @@ class SJ(Hook):
                     self.range_checkr(link,title)
                                 
             else:
-
+                
                 if self.getConfig("quality") != '480p':
                     if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")):
                         if self.getConfig("quality") in title:
@@ -127,10 +130,11 @@ class SJ(Hook):
         soup = BeautifulSoup(req_page)
         titles = soup.findAll(text=re.compile(search_title))
         for title in titles:
-           if (self.getConfig("quality") !='480p') and (self.getConfig("quality") in title):
+           if self.quality !='480p' and self.quality in title: 
                self.parse_download(series_url, title)
-           if (self.getConfig("quality") =='480p') and not (('.720p.' in post.title) or ('.1080p.' in post.title)):            
+           if self.quality =='480p' and not (('.720p.' in title) or ('.1080p.' in title)):               
                self.parse_download(series_url, title)
+
 
     def parse_download(self,series_url, search_title):
         req_page = getURL(series_url)
