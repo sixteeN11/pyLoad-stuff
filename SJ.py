@@ -45,7 +45,7 @@ def send_mail(text):
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.05"
+    __version__ = "1.06"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
@@ -54,7 +54,7 @@ class SJ(Hook):
                   ("rejectlist", "str", "Titel ablehnen mit (; getrennt)", "dd51;itunes"),
                   ("language", """DEUTSCH;ENGLISCH""", "Sprache", "DEUTSCH"),
                   ("interval", "int", "Interval", "60"),
-                  ("hoster", """ul;so;fm;cz""", "ul.to, filemonkey, cloudzer oder share-online", "ul"),
+                  ("hoster", """ul;so;fm;cz;alle""", "ul.to, filemonkey, cloudzer, share-online oder alle", "ul"),
                   ("pushover", "str", "deine pushover api", ""),
                   ("queue", "bool", "Direkt in die Warteschlange?", "False")]
     __author_name__ = ("gutz-pilz","zapp-brannigan")
@@ -69,6 +69,9 @@ class SJ(Hook):
         self.pattern = "|".join(getSeriesList(self.getConfig("file"))).lower()
         reject = self.getConfig("rejectlist").replace(";","|").lower() if len(self.getConfig("rejectlist")) > 0 else "^unmatchable$"
         self.quality = self.getConfig("quality")
+        self.hoster = self.getConfig("hoster")
+        if self.hoster == "alle":
+            self.hoster = "."
         self.added_items = []
         
         for post in feed.entries:
@@ -141,12 +144,14 @@ class SJ(Hook):
         soup = BeautifulSoup(req_page)
         title = soup.find(text=re.compile(search_title))
         if title:
+            items = []
             links = title.parent.parent.findAll('a')
             for link in links:
                 url = link['href']
-                pattern = '.*%s_.*' % self.getConfig("hoster")
+                pattern = '.*%s_.*' % self.hoster
                 if re.match(pattern, url):
-                    self.send_package(title, url)
+                    items.append(url)
+            self.send_package(title,items) if len(items) > 0 else True
                  
     def send_package(self, title, link):
         storage = self.getStorage(title)
@@ -157,5 +162,5 @@ class SJ(Hook):
             self.setStorage(title, 'downloaded')
             if self.getConfig('pushover'):
                 notify("SJ: Added package",title.encode("utf-8"),self.getConfig("pushover"))
-            self.core.api.addPackage(title.encode("utf-8"), link.split('"'), 1 if self.getConfig("queue") else 0)
+            self.core.api.addPackage(title.encode("utf-8"), link, 1 if self.getConfig("queue") else 0)
             self.added_items.append(title.encode("utf-8"))
