@@ -51,7 +51,7 @@ class HDAreaOrg(Hook):
             self.get_download(all, title)
     def get_download(self, soup1, title):
         for title in soup1.findAll("div", {"class" : "title"}):
-             hda_url = title.a["href"]
+             hda_url = title.a["href"].replace("https","http")
              req_page = getURL(hda_url)
              soup_ = BeautifulSoup(req_page)
              links = soup_.findAll("span", {"style":"display:inline;"})
