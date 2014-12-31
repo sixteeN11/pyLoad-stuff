@@ -44,7 +44,12 @@ class HDAreaOrg(Hook):
     def get_title(self,soup1):
         for all in soup1.findAll("div", {"class" : "topbox"}):
             for title in all.findAll("div", {"class" : "title"}):
-                 self.filter(all, title.getText())  
+                 fetched = self.getStorage(title.getText())
+                 if fetched == 'fetched':
+                     self.core.log.debug("HDaFetcher:\t"+title.getText()+ " already fetched")
+                 else:
+                     self.filter(all, title.getText())
+                     self.setStorage(title.getText(), 'fetched')
     def filter(self, all, title):
         season = re.compile('.*S\d|\Sd{2}|eason\d|eason\d{2}.*')
         if (self.getConfig("quality") in title) and not any (word.lower() in title.lower() for word in self.getConfig("rejectList").split(";")) and not season.match(title):
