@@ -27,9 +27,6 @@ pfad=${pfad_00##*/Medien}
         Final=$($DUCMD "$1" | cut -f1)
         Final2=$(echo "$Final" | sed -e :a -e 's/\(.*[0-9]\)\([0-9]\{3\}\)/\1.\2/;ta')
 
-        echo "$logline XBMC Library Update" | tee -a $LogFile
-        docker run --net=host -v /root/xbmc-server/xbmcdata:/opt/xbmc-server/portable_data --entrypoint=/opt/xbmc-server/xbmcVideoLibraryScan wernerb/docker-xbmc-server --no-test --nolirc -p
-
         echo "$logline E-Mail senden" | tee -a $LogFile
         echo -e "Verschoben nach:\t ~/NAS_HD$pfad/\n\nGroesse:\t$Final2 MB\n\n\nSincerly\nyour lovely NAS" | mailx -s "INFO: $mailtitle runtergeladen" hfdgdg7@gmail.com;
 
