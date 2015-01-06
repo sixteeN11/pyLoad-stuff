@@ -26,7 +26,7 @@ from module.utils import save_join
 
 class FileBot(Hook):
     __name__ = "FileBot"
-    __version__ = "0.41"
+    __version__ = "0.42"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
@@ -63,15 +63,12 @@ class FileBot(Hook):
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
     __author_mail__ = ("branko.wilhelm@gmail.com", "screver@gmail.com", "unwichtig@gmail.com")
 
-    #event_list = ["packageFinished", "unrarFinished", "allDownloadsFinished"]
-    event_map = {"packageFinished" : "package_startfb",
-                 "unrarFinished": "unrar_startfb"}
-
-    def package_startfb(self, pypack):
-        x = False
-        folder = self.core.config['general']['download_folder']
+    event_list = ["archive_extracted", "packageFinished"]
+                 
+    def packageFinished(self, pypack):
+        download_folder = self.config['general']['download_folder']
         folder = save_join(folder, pypack.folder)
-        self.core.log.debug("FileBot-Hook: MKV-Checkup (package_finished)") 
+        self.core.log.debug("FileBot-Hook: MKV-Checkup (packageFinished)") 
         for root, dirs, files in os.walk(folder):
             for name in files:
                 if name.endswith((".rar", ".r0", ".r12")):
@@ -82,10 +79,10 @@ class FileBot(Hook):
         if x == False:
             self.core.log.debug("Hier sind keine Archive")
             self.Finished(folder)
- 
-    def unrar_startfb(self, folder, fname):
+
+    def archive_extracted(self, pyfile, folder, filename, files):
         x = False
-        self.core.log.debug("FileBot-Hook: MKV-Checkup (unrar_finished)")
+        self.core.log.debug("FileBot-Hook: MKV-Checkup (archive_extracted)")
         for root, dirs, files in os.walk(folder):
             for name in files:
                 if name.endswith((".rar", ".r0", ".r12")):
@@ -98,7 +95,6 @@ class FileBot(Hook):
             self.Finished(folder)                
 
     def Finished(self, folder):
-
         args = []
 
         if self.getConfig('filebot'):
