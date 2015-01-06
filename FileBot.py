@@ -57,7 +57,9 @@ class FileBot(Hook):
 
                   ("exec", "str", "additional exec script", ""),
 
-                  ("no-xattr", "bool", "no-xattr", "False")]
+                  ("no-xattr", "bool", "no-xattr", "False"),
+                  
+                  ("xbmc", "str", "xbmc hostname", "")]
 
     __description__ = "Automated renaming and sorting for tv episodes movies, music and animes"
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
@@ -163,6 +165,9 @@ class FileBot(Hook):
 
         if self.getConfig('no-xattr') is True:
             args.append(" -no-xattr")
+
+        if self.getConfig('xbmc'):
+            args.append('xbmc=' + self.getConfig('xbmc'))
 
         args.append(folder)
 
