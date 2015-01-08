@@ -69,7 +69,7 @@ class FileBot(Hook):
                  
     def packageFinished(self, pypack):
         download_folder = self.config['general']['download_folder']
-        folder = save_join(folder, pypack.folder)
+        folder = save_join(download_folder, pypack.folder)
         self.core.log.debug("FileBot-Hook: MKV-Checkup (packageFinished)") 
         for root, dirs, files in os.walk(folder):
             for name in files:
