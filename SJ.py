@@ -45,7 +45,7 @@ def send_mail(text):
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.06"
+    __version__ = "1.07"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
@@ -94,17 +94,31 @@ class SJ(Hook):
                     self.range_checkr(link,title)
                                 
             else:
-                
                 if self.getConfig("quality") != '480p':
-                    if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")):
-                        if self.getConfig("quality") in title:
-                            title = re.sub('\[.*\] ', '', post.title)
-                            self.range_checkr(link,title)
+                    m = re.search(self.pattern,title.lower())
+                    if m:
+                        if self.getConfig("language") in title:
+                            mm = re.search(self.quality,title.lower())
+                            if mm:
+                                mmm = re.search(reject,title.lower())
+                                if mmm:
+                                    self.core.log.debug("SJFetcher - Abgelehnt: " + title)
+                                    continue
+                                title = re.sub('\[.*\] ', '', post.title)
+                                self.range_checkr(link,title)
         
                 else:
-                    if (self.getConfig("language") in title) and any (word.lower() in title.lower() for word in getSeriesList(self.getConfig("file"))) and not any (word2.lower() in title.lower() for word2 in self.getConfig("rejectlist").split(";")) and not ('720p' in title) and not ('1080p' in title):
-                        title = re.sub('\[.*\] ', '', post.title)
-                        self.range_checkr(link,title)
+                    m = re.search(self.pattern,title.lower())
+                    if m:
+                        if self.getConfig("language") in title:
+                            if "720p" in title.lower() or "1080p" in title.lower():
+                                continue
+                            mm = re.search(reject,title.lower())
+                            if mm:
+                                self.core.log.debug("SJFetcher - Abgelehnt: " + title)
+                                continue
+                            title = re.sub('\[.*\] ', '', post.title)
+                            self.range_checkr(link,title)
                         
         send_mail(self.added_items) if len(self.added_items) > 0 else True
             
