@@ -68,6 +68,7 @@ class FileBot(Hook):
     event_list = ["archive_extracted", "packageFinished"]
                  
     def packageFinished(self, pypack):
+        x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
         self.core.log.debug("FileBot-Hook: MKV-Checkup (packageFinished)") 
