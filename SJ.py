@@ -3,6 +3,7 @@ import feedparser, re, urllib, httplib, codecs
 from module.network.RequestFactory import getURL 
 from BeautifulSoup import BeautifulSoup
 import smtplib
+import pycurl
 
 def getSeriesList(file):
     titles = []
@@ -41,11 +42,24 @@ def send_mail(text):
     server.ehlo()
     server.login(username,password)
     server.sendmail(fromaddr, toaddrs, msg)
-    server.quit() 
+    server.quit()
+    
+def notifyPushbullet(apikey,text):
+    if apikey == "0" or apikey == "":
+        return
+    postData =  '{"type":"note", "title":"pyLoad: Package added!", "body":"%s"}' %" ### ".join(text).encode("utf-8")
+    c = pycurl.Curl()
+    c.setopt(pycurl.WRITEFUNCTION, lambda x: None)
+    c.setopt(pycurl.URL, 'https://api.pushbullet.com/v2/pushes')
+    c.setopt(pycurl.HTTPHEADER, ['Content-Type: application/json'])
+    c.setopt(pycurl.USERPWD, apikey.encode('utf-8'))
+    c.setopt(pycurl.POST, 1)
+    c.setopt(pycurl.POSTFIELDS, postData)
+    c.perform()
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.07"
+    __version__ = "1.08"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
@@ -56,7 +70,8 @@ class SJ(Hook):
                   ("interval", "int", "Interval", "60"),
                   ("hoster", """ul;so;fm;cz;alle""", "ul.to, filemonkey, cloudzer, share-online oder alle", "ul"),
                   ("pushover", "str", "deine pushover api", ""),
-                  ("queue", "bool", "Direkt in die Warteschlange?", "False")]
+                  ("queue", "bool", "Direkt in die Warteschlange?", "False"),
+                  ("pushbulletapi","str","Your Pushbullet-API key","0")]
     __author_name__ = ("gutz-pilz","zapp-brannigan")
     __author_mail__ = ("unwichtig@gmail.com","")
 
@@ -121,6 +136,7 @@ class SJ(Hook):
                             self.range_checkr(link,title)
                         
         send_mail(self.added_items) if len(self.added_items) > 0 else True
+        notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True
             
                     
     def range_checkr(self, link, title):
