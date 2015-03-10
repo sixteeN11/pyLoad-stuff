@@ -59,7 +59,7 @@ def notifyPushbullet(apikey,text):
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.08"
+    __version__ = "1.09"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
@@ -140,9 +140,9 @@ class SJ(Hook):
             
                     
     def range_checkr(self, link, title):
-        pattern = re.match(".*S\d{2}E\d{2}-\d{2}.*", title)
+        pattern = re.match(".*S\d{2}E\d{2}-\w?\d{2}.*", title)
         if pattern is not None:
-            range0 = re.sub(r".*S\d{2}E(\d{2}-\d{2}).*",r"\1", title)
+            range0 = re.sub(r".*S\d{2}E(\d{2}-\w?\d{2}).*",r"\1", title).replace("E","")
             number1 = re.sub(r"(\d{2})-\d{2}",r"\1", range0)
             number2 = re.sub(r"\d{2}-(\d{2})",r"\1", range0)
             title_cut = re.sub(r"(.*S\d{2}E).*",r"\1",title)
