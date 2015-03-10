@@ -8,6 +8,7 @@ LogFile=/root/.pyload/Logs/log.txt
 ##tmpFolder=$MediaDir/tmp
 
 ## String Manipulation
+mailtitle_ext=${1##*/}
 mailtitle=${mailtitle_ext%.*}
 pfad_00=${1%/*.mkv}
 pfad=${pfad_00##*/Medien}
