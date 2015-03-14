@@ -12,7 +12,7 @@ mailtitle_ext=${1##*/}
 mailtitle=${mailtitle_ext%.*}
 pfad_00=${1%/*.mkv}
 pfad=${pfad_00##*/Medien}
-
+if grep -q ".mkv" "$1"; then
         echo  "$logline ##########################" | tee -a $LogFile
         echo  "$logline Dateihandling nachdem FILEBOT fertig ist" | tee -a $LogFile
         echo  "$logline Datei wurde nach ~${1%/*.mkv}/* verschoben" | tee -a $LogFile
@@ -34,4 +34,4 @@ pfad=${pfad_00##*/Medien}
         echo "$logline Lösche leere Ordner" | tee -a $LogFile
         cd /root/.pyload/Downloads
         find . -type d -empty -exec rmdir {} \;
-
+fi
