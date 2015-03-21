@@ -59,7 +59,11 @@ class FileBot(Hook):
 
                   ("no-xattr", "bool", "no-xattr", "False"),
                   
-                  ("xbmc", "str", "xbmc hostname", "")]
+                  ("xbmc", "str", "xbmc hostname", ""),
+                  
+                  ("plex", "str", "plex hostname", ""),
+                  
+                  ("plextoken", "str", "plex token", "") ]
 
     __description__ = "Automated renaming and sorting for tv episodes movies, music and animes"
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
@@ -169,6 +173,9 @@ class FileBot(Hook):
 
         if self.getConfig('xbmc'):
             args.append('xbmc=' + self.getConfig('xbmc'))
+
+        if self.getConfig('plex'):
+            args.append('plex='%s[:%s]' % (self.getConfig('plex'),  self.getConfig('plextoken')))
 
         args.append(folder)
 
