@@ -63,7 +63,9 @@ class FileBot(Hook):
                   
                   ("plex", "str", "plex hostname", ""),
                   
-                  ("plextoken", "str", "plex token", "") ]
+                  ("plextoken", "str", "plex token", ""),
+
+                  ("extras", """y;n""", "create .url with all available backdrops", "n")]
 
     __description__ = "Automated renaming and sorting for tv episodes movies, music and animes"
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
@@ -176,6 +178,9 @@ class FileBot(Hook):
 
         if self.getConfig('plex'):
             args.append('plex='%s[:%s]' % (self.getConfig('plex'),  self.getConfig('plextoken')))
+            
+        if self.getConfig('extras'):
+            args.append('extras='+ self.getConfig('extras'))
 
         args.append(folder)
 
