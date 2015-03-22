@@ -177,7 +177,7 @@ class FileBot(Hook):
             args.append('xbmc=' + self.getConfig('xbmc'))
 
         if self.getConfig('plex'):
-            args.append('plex='%s[:%s]' % (self.getConfig('plex'),  self.getConfig('plextoken')))
+            args.append('plex='%s:%s' % (self.getConfig('plex'),  self.getConfig('plextoken')))
             
         if self.getConfig('extras'):
             args.append('extras='+ self.getConfig('extras'))
