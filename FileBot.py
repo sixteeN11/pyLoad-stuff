@@ -79,7 +79,7 @@ class FileBot(Hook):
         item2=re.findall('bool delete : "Delete archive after extraction" =.*$',confFile,re.MULTILINE)
         for x in item2:
             if extractarchive != x:
-                for line in fileinput.FileInput("/root/.pyload/plugin.conf", inplace=1):
+                for line in fileinput.FileInput(self.getConfig('confFile'), inplace=1):
                     line=line.replace(x,extractarchive)
                     print line,
                 #print "changed line2"
