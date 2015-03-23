@@ -58,11 +58,11 @@ class FileBot(Hook):
                   ("exec", "str", "additional exec script", ""),
 
                   ("no-xattr", "bool", "no-xattr", "False"),
-                  
+
                   ("xbmc", "str", "xbmc hostname", ""),
-                  
+
                   ("plex", "str", "plex hostname", ""),
-                  
+
                   ("plextoken", "str", "plex token", ""),
 
                   ("extras", """y;n""", "create .url with all available backdrops", "n")]
@@ -72,12 +72,12 @@ class FileBot(Hook):
     __author_mail__ = ("branko.wilhelm@gmail.com", "screver@gmail.com", "unwichtig@gmail.com")
 
     event_list = ["package_extracted", "packageFinished"]
-                 
+
     def packageFinished(self, pypack):
         x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
-        self.core.log.debug("FileBot-Hook: MKV-Checkup (packageFinished)") 
+        self.core.log.debug("FileBot-Hook: MKV-Checkup (packageFinished)")
         for root, dirs, files in os.walk(folder):
             for name in files:
                 if name.endswith((".rar", ".r0", ".r12")):
@@ -103,7 +103,7 @@ class FileBot(Hook):
             break
         if x == False:
             self.core.log.debug("Hier sind keine Archive")
-            self.Finished(folder)                
+            self.Finished(folder)
 
     def Finished(self, folder):
         args = []
@@ -179,8 +179,8 @@ class FileBot(Hook):
             args.append('xbmc=' + self.getConfig('xbmc'))
 
         if self.getConfig('plex'):
-            args.append('plex='%s:%s' % (self.getConfig('plex'),  self.getConfig('plextoken')))
-            
+            args.append('plex=%s:%s' % (self.getConfig('plex'), self.getConfig('plextoken')))
+
         if self.getConfig('extras'):
             args.append('extras='+ self.getConfig('extras'))
 
