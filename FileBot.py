@@ -89,8 +89,10 @@ class FileBot(Hook):
             self.core.log.debug("Hier sind keine Archive")
             self.Finished(folder)
 
-    def archive_extracted(self, pyfile, folder, filename, files):
+    def archive_extracted(self, pypack):
         x = False
+        download_folder = self.config['general']['download_folder']
+        folder = save_join(download_folder, pypack.folder)
         self.core.log.debug("FileBot-Hook: MKV-Checkup (archive_extracted)")
         for root, dirs, files in os.walk(folder):
             for name in files:
