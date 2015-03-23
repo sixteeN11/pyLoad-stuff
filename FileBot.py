@@ -71,7 +71,7 @@ class FileBot(Hook):
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
     __author_mail__ = ("branko.wilhelm@gmail.com", "screver@gmail.com", "unwichtig@gmail.com")
 
-    event_list = ["archive_extracted", "packageFinished"]
+    event_list = ["package_extracted", "packageFinished"]
                  
     def packageFinished(self, pypack):
         x = False
@@ -89,7 +89,7 @@ class FileBot(Hook):
             self.core.log.debug("Hier sind keine Archive")
             self.Finished(folder)
 
-    def archive_extracted(self, pypack):
+    def package_extracted(self, pypack):
         x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
