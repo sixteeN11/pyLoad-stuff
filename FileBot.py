@@ -65,7 +65,7 @@ class FileBot(Hook):
 
                   ("extras", """y;n""", "create .url with all available backdrops", "n"),
                   
-                  ("confFile", "str", "plugin.conf Location", "/root/.pyload/plugin.conf"),]
+                  ("confFile", "str", "plugin.conf Location", "/root/.pyload/plugin.conf")]
 
     __description__ = "Automated renaming and sorting for tv episodes movies, music and animes"
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
