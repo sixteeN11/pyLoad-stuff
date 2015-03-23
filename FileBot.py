@@ -73,19 +73,8 @@ class FileBot(Hook):
 
     event_list = ["package_extracted", "packageFinished"]
 
-    def checkConfig(self):
-        confFile = open(self.getConfig('confFile')).read()
-        extractarchive = 'bool delete : "Delete archive after extraction" = True'
-        item2=re.findall('bool delete : "Delete archive after extraction" =.*$',confFile,re.MULTILINE)
-        for x in item2:
-            if extractarchive != x:
-                for line in fileinput.FileInput(self.getConfig('confFile'), inplace=1):
-                    line=line.replace(x,extractarchive)
-                    print line,
-                self.core.log.debug("###Delete archive after extraction wasnt TRUE###")
-
     def packageFinished(self, pypack):
-        self.checkConfig()
+        self.core.api.setConfigValue("ExtractArchive", "delete", "True", section='plugin')
         x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
@@ -102,7 +91,7 @@ class FileBot(Hook):
             self.Finished(folder)
 
     def package_extracted(self, pypack):
-        self.checkConfig()
+        self.core.api.setConfigValue("ExtractArchive", "delete", "True", section='plugin')
         x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
@@ -110,7 +99,7 @@ class FileBot(Hook):
         for root, dirs, files in os.walk(folder):
             for name in files:
                 if name.endswith((".rar", ".r0", ".r12")):
-                    self.core.log.debug("Hier sind noch Arhive")
+                    self.core.log.debug("Hier sind noch Archive")
                     x = True
                 break
             break
