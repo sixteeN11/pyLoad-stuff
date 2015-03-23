@@ -24,7 +24,7 @@ from module.utils import save_join
 
 class FileBot(Hook):
     __name__ = "FileBot"
-    __version__ = "0.45"
+    __version__ = "0.47"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
@@ -61,10 +61,10 @@ class FileBot(Hook):
 
                   ("plex", "str", "plex hostname", ""),
 
-                  ("plextoken", "str", "plex token", ""),
+                  ("plextoken", "str", "plex token (only needed with external plex servers)", ""),
 
                   ("extras", """y;n""", "create .url with all available backdrops", "n"),
-                  
+
                   ("confFile", "str", "plugin.conf Location", "/root/.pyload/plugin.conf")]
 
     __description__ = "Automated renaming and sorting for tv episodes movies, music and animes"
@@ -83,7 +83,7 @@ class FileBot(Hook):
                     line=line.replace(x,extractarchive)
                     print line,
                 self.core.log.debug("###Delete archive after extraction wasnt TRUE###")
-        
+
     def packageFinished(self, pypack):
         self.checkConfig()
         x = False
@@ -192,7 +192,14 @@ class FileBot(Hook):
             args.append('xbmc=' + self.getConfig('xbmc'))
 
         if self.getConfig('plex'):
-            args.append('plex=%s:%s' % (self.getConfig('plex'), self.getConfig('plextoken')))
+            if self.getConfig('plextoken'):
+                plexToken = ":" + self.getConfig('plextoken')
+            else:
+                plexToken = ""
+
+            args.append('plex=' + self.getConfig('plex') + plexToken)
+            self.logInfo('plex refreshed at ' + self.getConfig('plex') + plexToken)
+
 
         if self.getConfig('extras'):
             args.append('extras='+ self.getConfig('extras'))
