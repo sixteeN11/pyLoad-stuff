@@ -82,7 +82,7 @@ class FileBot(Hook):
                 for line in fileinput.FileInput(self.getConfig('confFile'), inplace=1):
                     line=line.replace(x,extractarchive)
                     print line,
-                #print "changed line2"
+                self.core.log.debug("###Delete archive after extraction wasnt TRUE###")
         
     def packageFinished(self, pypack):
         self.checkConfig()
