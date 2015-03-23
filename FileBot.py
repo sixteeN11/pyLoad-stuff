@@ -14,9 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import subprocess
-import os
-import re
+import subprocess, re, os, fileinput
 from os import listdir, access, X_OK, makedirs
 from os.path import join, exists, basename
 
@@ -26,7 +24,7 @@ from module.utils import save_join
 
 class FileBot(Hook):
     __name__ = "FileBot"
-    __version__ = "0.44"
+    __version__ = "0.45"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
@@ -65,7 +63,9 @@ class FileBot(Hook):
 
                   ("plextoken", "str", "plex token", ""),
 
-                  ("extras", """y;n""", "create .url with all available backdrops", "n")]
+                  ("extras", """y;n""", "create .url with all available backdrops", "n"),
+                  
+                  ("confFile", "str", "plugin.conf Location", "/root/.pyload/plugin.conf"),]
 
     __description__ = "Automated renaming and sorting for tv episodes movies, music and animes"
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
@@ -73,7 +73,19 @@ class FileBot(Hook):
 
     event_list = ["package_extracted", "packageFinished"]
 
+    def checkConfig(self):
+        confFile = open(self.getConfig('confFile')).read()
+        extractarchive = 'bool delete : "Delete archive after extraction" = True'
+        item2=re.findall('bool delete : "Delete archive after extraction" =.*$',confFile,re.MULTILINE)
+        for x in item2:
+            if extractarchive != x:
+                for line in fileinput.FileInput("/root/.pyload/plugin.conf", inplace=1):
+                    line=line.replace(x,extractarchive)
+                    print line,
+                #print "changed line2"
+        
     def packageFinished(self, pypack):
+        self.checkConfig()
         x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
@@ -90,6 +102,7 @@ class FileBot(Hook):
             self.Finished(folder)
 
     def package_extracted(self, pypack):
+        self.checkConfig()
         x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
