@@ -97,7 +97,7 @@ class FileBot(Hook):
         x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
-        self.core.log.debug("FileBot-Hook: MKV-Checkup (archive_extracted)")
+        self.core.log.debug("FileBot-Hook: MKV-Checkup (package_extracted)")
         for root, dirs, files in os.walk(folder):
             for name in files:
                 if name.endswith((".rar", ".r0", ".r12")):
