@@ -24,7 +24,7 @@ from module.utils import save_join
 
 class FileBot(Hook):
     __name__ = "FileBot"
-    __version__ = "0.47"
+    __version__ = "0.5"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
@@ -64,8 +64,6 @@ class FileBot(Hook):
                   ("plextoken", "str", "plex token (only needed with external plex servers)", ""),
 
                   ("extras", """y;n""", "create .url with all available backdrops", "n"),
-
-                  ("confFile", "str", "plugin.conf Location", "/root/.pyload/plugin.conf"),
                   
                   ("pushover", "str", "pushover user-key", ""),
 
