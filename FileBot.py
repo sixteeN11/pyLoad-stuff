@@ -14,9 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import subprocess
-import os
-import re
+import subprocess, re, os, fileinput
 from os import listdir, access, X_OK, makedirs
 from os.path import join, exists, basename
 
@@ -26,7 +24,7 @@ from module.utils import save_join
 
 class FileBot(Hook):
     __name__ = "FileBot"
-    __version__ = "0.42"
+    __version__ = "0.47"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
@@ -58,26 +56,34 @@ class FileBot(Hook):
                   ("exec", "str", "additional exec script", ""),
 
                   ("no-xattr", "bool", "no-xattr", "False"),
-                  
-                  ("xbmc", "str", "xbmc hostname", ""),
-                  
-                  ("plex", "str", "plex hostname", ""),
-                  
-                  ("plextoken", "str", "plex token", ""),
 
-                  ("extras", """y;n""", "create .url with all available backdrops", "n")]
+                  ("xbmc", "str", "xbmc hostname", ""),
+
+                  ("plex", "str", "plex hostname", ""),
+
+                  ("plextoken", "str", "plex token (only needed with external plex servers)", ""),
+
+                  ("extras", """y;n""", "create .url with all available backdrops", "n"),
+
+                  ("confFile", "str", "plugin.conf Location", "/root/.pyload/plugin.conf"),
+                  
+                  ("pushover", "str", "pushover user-key", ""),
+
+                  ("pushbullet", "str", "pushbullet api-key", "")]
 
     __description__ = "Automated renaming and sorting for tv episodes movies, music and animes"
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
     __author_mail__ = ("branko.wilhelm@gmail.com", "screver@gmail.com", "unwichtig@gmail.com")
 
-    event_list = ["archive_extracted", "packageFinished"]
-                 
+    event_list = ["package_extracted", "packageFinished"]
+
     def packageFinished(self, pypack):
+        self.core.api.setConfigValue("ExtractArchive", "delete", "Permanent", section='plugin')
+        #self.core.api.setConfigValue("FileBot", "exec", 'cd / && ./filebot.sh "{file}"', section='plugin')
         x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
-        self.core.log.debug("FileBot-Hook: MKV-Checkup (packageFinished)") 
+        self.core.log.debug("FileBot-Hook: MKV-Checkup (packageFinished)")
         for root, dirs, files in os.walk(folder):
             for name in files:
                 if name.endswith((".rar", ".r0", ".r12")):
@@ -89,19 +95,23 @@ class FileBot(Hook):
             self.core.log.debug("Hier sind keine Archive")
             self.Finished(folder)
 
-    def archive_extracted(self, pyfile, folder, filename, files):
+    def package_extracted(self, pypack):
+        self.core.api.setConfigValue("ExtractArchive", "delete", "Permanent", section='plugin')
+        #self.core.api.setConfigValue("FileBot", "exec", 'cd / && ./filebot.sh "{file}"', section='plugin')
         x = False
-        self.core.log.debug("FileBot-Hook: MKV-Checkup (archive_extracted)")
+        download_folder = self.config['general']['download_folder']
+        folder = save_join(download_folder, pypack.folder)
+        self.core.log.debug("FileBot-Hook: MKV-Checkup (package_extracted)")
         for root, dirs, files in os.walk(folder):
             for name in files:
                 if name.endswith((".rar", ".r0", ".r12")):
-                    self.core.log.debug("Hier sind noch Arhive")
+                    self.core.log.debug("Hier sind noch Archive")
                     x = True
                 break
             break
         if x == False:
             self.core.log.debug("Hier sind keine Archive")
-            self.Finished(folder)                
+            self.Finished(folder)
 
     def Finished(self, folder):
         args = []
@@ -175,10 +185,23 @@ class FileBot(Hook):
 
         if self.getConfig('xbmc'):
             args.append('xbmc=' + self.getConfig('xbmc'))
+            
+        if self.getConfig('pushover'):
+            args.append('pushover=' + self.getConfig('pushover'))
+
+        if self.getConfig('pushbullet'):
+            args.append('pushbullet=' + self.getConfig('pushbullet'))
 
         if self.getConfig('plex'):
-            args.append('plex='%s[:%s]' % (self.getConfig('plex'),  self.getConfig('plextoken')))
-            
+            if self.getConfig('plextoken'):
+                plexToken = ":" + self.getConfig('plextoken')
+            else:
+                plexToken = ""
+
+            args.append('plex=' + self.getConfig('plex') + plexToken)
+            self.logInfo('plex refreshed at ' + self.getConfig('plex') + plexToken)
+
+
         if self.getConfig('extras'):
             args.append('extras='+ self.getConfig('extras'))
 
