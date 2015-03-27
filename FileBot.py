@@ -65,7 +65,11 @@ class FileBot(Hook):
                   
                   ("plextoken", "str", "plex token", ""),
 
-                  ("extras", """y;n""", "create .url with all available backdrops", "n")]
+                  ("extras", """y;n""", "create .url with all available backdrops", "n"),
+                  
+                  ("pushover", "str", "pushover user-key", ""),
+                  
+                  ("pushbullet", "str", "pushbullet api-key", "")]
 
     __description__ = "Automated renaming and sorting for tv episodes movies, music and animes"
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
@@ -181,6 +185,12 @@ class FileBot(Hook):
             
         if self.getConfig('extras'):
             args.append('extras='+ self.getConfig('extras'))
+            
+        if self.getConfig('pushover'):
+            args.append('pushover=' + self.getConfig('pushover'))
+
+        if self.getConfig('pushbullet'):
+            args.append('pushbullet=' + self.getConfig('pushbullet'))
 
         args.append(folder)
 
