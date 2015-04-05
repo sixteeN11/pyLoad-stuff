@@ -15,10 +15,22 @@ def replaceUmlauts(title):
     title = title.replace(unichr(223), "ss")
     title = title.replace('&amp;', "&")
     return title
+def notifyPushbullet(apikey,text):
+    if apikey == "0" or apikey == "":
+        return
+    postData =  '{"type":"note", "title":"pyLoad: Package added!", "body":"%s"}' %" ### ".join(text).encode("utf-8")
+    c = pycurl.Curl()
+    c.setopt(pycurl.WRITEFUNCTION, lambda x: None)
+    c.setopt(pycurl.URL, 'https://api.pushbullet.com/v2/pushes')
+    c.setopt(pycurl.HTTPHEADER, ['Content-Type: application/json'])
+    c.setopt(pycurl.USERPWD, apikey.encode('utf-8'))
+    c.setopt(pycurl.POST, 1)
+    c.setopt(pycurl.POSTFIELDS, postData)
+    c.perform()
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
-    __version__ = "1.1"
+    __version__ = "1.12"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
@@ -29,7 +41,8 @@ class HDAreaOrg(Hook):
                   ("conf_year","long","Min Year","1990"),
                   ("rej_genre","str","Reject Genre","Family;Anime;Documentary"),
                   ("pushover", "str", "deine pushover api", ""),
-                  ("hoster", "str", "Preferred Hoster (seperated by ;)","uploaded;uplaoded;oboom;cloudzer;filemonkey")]
+                  ("hoster", "str", "Preferred Hoster (seperated by ;)","uploaded;uplaoded;oboom;cloudzer;filemonkey"),
+                  ("pushbulletapi","str","Your Pushbullet-API key","0")]
     __author_name__ = ("gutz-pilz")
     __author_mail__ = ("unwichtig@gmail.com")
 
@@ -41,6 +54,7 @@ class HDAreaOrg(Hook):
             req_page = getURL(address)
             soup = BeautifulSoup(req_page)
             self.get_title(soup)
+            self.added_items = []
     def get_title(self,soup1):
         for all in soup1.findAll("div", {"class" : "topbox"}):
             for title in all.findAll("div", {"class" : "title"}):
@@ -114,11 +128,13 @@ class HDAreaOrg(Hook):
                     if (rating < self.getConfig("conf_rating_queue")) and (rating > self.getConfig("conf_rating_collector")):
                         self.core.log.info("HDaFetcher:\tCOLLECTOR: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
+                        self.added_items.append(title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url)
                         if self.getConfig('pushover'):
                             notify("Added to Collector", title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))   
                     elif rating > self.getConfig("conf_rating_queue"):
                         self.core.log.info("HDaFetcher:\tQUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
+                        self.added_items.append(title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url)
                         if self.getConfig('pushover'):
                             notify("Added to Queue", title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
-                        
+          notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True            
