@@ -14,14 +14,14 @@ def replaceUmlauts(title):
 def notifyPushover(apikey, message):
     if apikey == "0" or apikey == "":
         return
-    data = '{"token":"aD1MxoNvGY1S5zaTM7rGjhDkXDpoS2","user":apikey,"message":"%s","title":"pyLoad: Package added!"}' %" ### ".join(message).encode("utf-8")
+    data = '{"token":"aD1MxoNvGY1S5zaTM7rGjhDkXDpoS2","user":apikey,"message":"%s\n","title":"pyLoad: Package added!"}' %" ### ".join(message).encode("utf-8")
     conn = httplib.HTTPSConnection("api.pushover.net:443")
     conn.request("POST", "/1/messages.json", urllib.urlencode(data), { "Content-type": "application/x-www-form-urlencoded" })
     result = conn.getresponse()
 def notifyPushbullet(apikey,message):
     if apikey == "0" or apikey == "":
         return
-    data =  '{"type":"note", "title":"pyLoad: Package added!", "body":"%s"}' %" ### ".join(message).encode("utf-8")
+    data =  '{"type":"note", "title":"pyLoad: Package added!", "body":"%s\n"}' %" ### ".join(message).encode("utf-8")
     c = pycurl.Curl()
     c.setopt(pycurl.WRITEFUNCTION, lambda x: None)
     c.setopt(pycurl.URL, 'https://api.pushbullet.com/v2/pushes')
