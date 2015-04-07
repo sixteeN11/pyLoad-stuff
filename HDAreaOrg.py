@@ -54,7 +54,7 @@ class HDAreaOrg(Hook):
         self.interval = self.getConfig("interval") * 60
     def periodical(self):
         self.added_items = []
-        for site in ('top-rls','movies','Cinedubs','msd','Old_Stuff'):
+        for site in ('top-rls','movies','msd','Old_Stuff'):
             address = ('http://hd-area.org/index.php?s=' + site)
             req_page = getURL(address)
             soup = BeautifulSoup(req_page)
