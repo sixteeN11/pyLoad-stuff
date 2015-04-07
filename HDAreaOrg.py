@@ -3,11 +3,7 @@ import feedparser, re, urllib2, urllib, httplib
 from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
 
-def notify(title, message, api):
-    data = {"token":"aD1MxoNvGY1S5zaTM7rGjhDkXDpoS2","user":api,"message":message,"title":title}
-    conn = httplib.HTTPSConnection("api.pushover.net:443")
-    conn.request("POST", "/1/messages.json", urllib.urlencode(data), { "Content-type": "application/x-www-form-urlencoded" })
-    result = conn.getresponse()
+
 def replaceUmlauts(title):
     title = title.replace(unichr(228), "ae").replace(unichr(196), "Ae")
     title = title.replace(unichr(252), "ue").replace(unichr(220), "Ue")
@@ -15,17 +11,24 @@ def replaceUmlauts(title):
     title = title.replace(unichr(223), "ss")
     title = title.replace('&amp;', "&")
     return title
-def notifyPushbullet(apikey,text):
+def notifyPushover(apikey, message):
     if apikey == "0" or apikey == "":
         return
-    postData =  '{"type":"note", "title":"pyLoad: Package added!", "body":"%s"}' %" ### ".join(text).encode("utf-8")
+    data = '{"token":"aD1MxoNvGY1S5zaTM7rGjhDkXDpoS2","user":apikey,"message":"%s","title":"pyLoad: Package added!"}' %" ### ".join(message).encode("utf-8")
+    conn = httplib.HTTPSConnection("api.pushover.net:443")
+    conn.request("POST", "/1/messages.json", urllib.urlencode(data), { "Content-type": "application/x-www-form-urlencoded" })
+    result = conn.getresponse()
+def notifyPushbullet(apikey,message):
+    if apikey == "0" or apikey == "":
+        return
+    data =  '{"type":"note", "title":"pyLoad: Package added!", "body":"%s"}' %" ### ".join(message).encode("utf-8")
     c = pycurl.Curl()
     c.setopt(pycurl.WRITEFUNCTION, lambda x: None)
     c.setopt(pycurl.URL, 'https://api.pushbullet.com/v2/pushes')
     c.setopt(pycurl.HTTPHEADER, ['Content-Type: application/json'])
     c.setopt(pycurl.USERPWD, apikey.encode('utf-8'))
     c.setopt(pycurl.POST, 1)
-    c.setopt(pycurl.POSTFIELDS, postData)
+    c.setopt(pycurl.POSTFIELDS, data)
     c.perform()
 
 class HDAreaOrg(Hook):
@@ -40,7 +43,7 @@ class HDAreaOrg(Hook):
                   ("interval", "int", "Check interval in minutes", "60"),
                   ("conf_year","long","Min Year","1990"),
                   ("rej_genre","str","Reject Genre","Family;Anime;Documentary"),
-                  ("pushover", "str", "deine pushover api", ""),
+                  ("pushoverapi", "str", "deine pushover api", "0"),
                   ("hoster", "str", "Preferred Hoster (seperated by ;)","uploaded;uplaoded;oboom;cloudzer;filemonkey"),
                   ("pushbulletapi","str","Your Pushbullet-API key","0")]
     __author_name__ = ("gutz-pilz")
@@ -128,13 +131,10 @@ class HDAreaOrg(Hook):
                     if (rating < self.getConfig("conf_rating_queue")) and (rating > self.getConfig("conf_rating_collector")):
                         self.core.log.info("HDaFetcher:\tCOLLECTOR: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
-                        self.added_items.append(title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url)
-                        if self.getConfig('pushover'):
-                            notify("Added to Collector", title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))   
+                        self.added_items.append(title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url) 
                     elif rating > self.getConfig("conf_rating_queue"):
                         self.core.log.info("HDaFetcher:\tQUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
                         self.added_items.append(title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url)
-                        if self.getConfig('pushover'):
-                            notify("Added to Queue", title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url, self.getConfig("pushover"))
-          notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True            
+        notify(self.getConfig("pushoverapi"),self.added_items) if len(self.added_items) > 0 else True
+        notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True            
