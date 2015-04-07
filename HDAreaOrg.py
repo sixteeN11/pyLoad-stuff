@@ -33,11 +33,12 @@ def notifyPushbullet(apikey,message):
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
-    __version__ = "1.12"
+    __version__ = "1.3"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
                   ("rejectList", "str", "reject (; getrennt)", "dd51;itunes"),
+                  ("cinedubs", "bool", "Fetch Cinedubs", "False")
                   ("conf_rating_collector","float","Collector Rating","6.1"),
                   ("conf_rating_queue","float","Queue Rating","7.1"),
                   ("interval", "int", "Check interval in minutes", "60"),
@@ -52,37 +53,42 @@ class HDAreaOrg(Hook):
     def setup(self):
         self.interval = self.getConfig("interval") * 60
     def periodical(self):
+        self.added_items = []
         for site in ('top-rls','movies','Cinedubs','msd','Old_Stuff'):
             address = ('http://hd-area.org/index.php?s=' + site)
             req_page = getURL(address)
             soup = BeautifulSoup(req_page)
             self.get_title(soup)
-            self.added_items = []
+        if self.getConfig("cinedubs") == True:
+            address = ('http://hd-area.org/index.php?s=Cinedubs')
+            req_page = getURL(address)
+            soup = BeautifulSoup(req_page)
+            self.get_title(soup)
     def get_title(self,soup1):
         for all in soup1.findAll("div", {"class" : "topbox"}):
             for title in all.findAll("div", {"class" : "title"}):
-                 fetched = self.getStorage(title.getText())
-                 if fetched == 'fetched':
-                     self.core.log.debug("HDaFetcher:\t"+title.getText()+ " already fetched")
-                 else:
-                     self.filter(all, title.getText())
-                     self.setStorage(title.getText(), 'fetched')
+                fetched = self.getStorage(title.getText())
+                if fetched == 'fetched':
+                    self.core.log.debug("HDaFetcher:\t"+title.getText()+ " already fetched")
+                else:
+                    self.filter(all, title.getText())
+                    self.setStorage(title.getText(), 'fetched')
     def filter(self, all, title):
         season = re.compile('.*S\d|\Sd{2}|eason\d|eason\d{2}.*')
         if (self.getConfig("quality") in title) and not any (word.lower() in title.lower() for word in self.getConfig("rejectList").split(";")) and not season.match(title):
             self.get_download(all, title)
     def get_download(self, soup1, title):
         for title in soup1.findAll("div", {"class" : "title"}):
-             hda_url = title.a["href"].replace("https","http")
-             req_page = getURL(hda_url)
-             soup_ = BeautifulSoup(req_page)
-             links = soup_.findAll("span", {"style":"display:inline;"})
-             for link in links:
-                 url = link.a["href"]
-                 for pref_hoster in self.getConfig("hoster"):
-                     if pref_hoster.lower() in link.text.lower():
-                         self.get_year(soup1, title, url)
-                     break
+            hda_url = title.a["href"].replace("https","http")
+            req_page = getURL(hda_url)
+            soup_ = BeautifulSoup(req_page)
+            links = soup_.findAll("span", {"style":"display:inline;"})
+            for link in links:
+                url = link.a["href"]
+                for pref_hoster in self.getConfig("hoster"):
+                    if pref_hoster.lower() in link.text.lower():
+                        self.get_year(soup1, title, url)
+                    break
     def get_year(self, soup1, title, dlLink):
         imdb_url = soup1.find("div", {"class" : "boxrechts"})
         imdb_url = unicode.join(u'',map(unicode,imdb_url))
@@ -136,5 +142,5 @@ class HDAreaOrg(Hook):
                         self.core.log.info("HDaFetcher:\tQUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
                         self.added_items.append(title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url)
-        notify(self.getConfig("pushoverapi"),self.added_items) if len(self.added_items) > 0 else True
+        notifyPushover(self.getConfig("pushoverapi"),self.added_items) if len(self.added_items) > 0 else True
         notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True            
