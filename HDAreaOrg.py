@@ -14,23 +14,22 @@ def replaceUmlauts(title):
 def notifyPushover(apikey, message):
     if apikey == "0" or apikey == "":
         return
-    data = '{"token":"aD1MxoNvGY1S5zaTM7rGjhDkXDpoS2","user":apikey,"message":"%s\n","title":"pyLoad: Package added!"}' %" ### ".join(message).encode("utf-8")
+    data = '{"token":"aD1MxoNvGY1S5zaTM7rGjhDkXDpoS2","user":apikey,"message":"%s","title":"pyLoad: Package added!"}' %" ### ".join(message).decode("utf-8")
     conn = httplib.HTTPSConnection("api.pushover.net:443")
     conn.request("POST", "/1/messages.json", urllib.urlencode(data), { "Content-type": "application/x-www-form-urlencoded" })
     result = conn.getresponse()
-def notifyPushbullet(apikey,message):
+def notifyPushbullet(apikey,text):
     if apikey == "0" or apikey == "":
         return
-    data =  '{"type":"note", "title":"pyLoad: Package added!", "body":"%s\n"}' %" ### ".join(message).encode("utf-8")
+    postData =  '{"type":"note", "title":"pyLoad: Package added!", "body":"%s"}' %" ### ".join(text).encode("utf-8")
     c = pycurl.Curl()
     c.setopt(pycurl.WRITEFUNCTION, lambda x: None)
     c.setopt(pycurl.URL, 'https://api.pushbullet.com/v2/pushes')
     c.setopt(pycurl.HTTPHEADER, ['Content-Type: application/json'])
     c.setopt(pycurl.USERPWD, apikey.encode('utf-8'))
     c.setopt(pycurl.POST, 1)
-    c.setopt(pycurl.POSTFIELDS, data)
+    c.setopt(pycurl.POSTFIELDS, postData)
     c.perform()
-
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
     __version__ = "1.3"
@@ -139,8 +138,8 @@ class HDAreaOrg(Hook):
                     if (rating < self.getConfig("conf_rating_queue")) and (rating > self.getConfig("conf_rating_collector")):
                         self.core.log.info("HDaFetcher:\tCOLLECTOR: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
-                        self.added_items.append(title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url) 
+                        self.added_items.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating) 
                     elif rating > self.getConfig("conf_rating_queue"):
                         self.core.log.info("HDaFetcher:\tQUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
-                        self.added_items.append(title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url)
+                        self.added_items.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating)
