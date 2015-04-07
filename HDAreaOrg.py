@@ -38,7 +38,7 @@ class HDAreaOrg(Hook):
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
                   ("rejectList", "str", "reject (; getrennt)", "dd51;itunes"),
-                  ("cinedubs", "bool", "Fetch Cinedubs", "False")
+                  ("cinedubs", "bool", "Fetch Cinedubs", "False"),
                   ("conf_rating_collector","float","Collector Rating","6.1"),
                   ("conf_rating_queue","float","Queue Rating","7.1"),
                   ("interval", "int", "Check interval in minutes", "60"),
