@@ -64,6 +64,8 @@ class HDAreaOrg(Hook):
             req_page = getURL(address)
             soup = BeautifulSoup(req_page)
             self.get_title(soup)
+        notifyPushover(self.getConfig("pushoverapi"),self.added_items) if len(self.added_items) > 0 else True
+        notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True  
     def get_title(self,soup1):
         for all in soup1.findAll("div", {"class" : "topbox"}):
             for title in all.findAll("div", {"class" : "title"}):
@@ -142,5 +144,3 @@ class HDAreaOrg(Hook):
                         self.core.log.info("HDaFetcher:\tQUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
                         self.added_items.append(title.decode("utf-8")+" ("+year+") \n\tIMDb_rating: "+rating+"\n\tIMDb_URL: "+imdb_url)
-        notifyPushover(self.getConfig("pushoverapi"),self.added_items) if len(self.added_items) > 0 else True
-        notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True            
