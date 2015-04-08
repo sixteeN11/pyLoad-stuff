@@ -33,6 +33,8 @@ pfad=${pfad_00##*/Medien}
         find . -type d -empty -exec rmdir {} \;
         
 if grep -q ".mkv" "$1"; then
-        echo "$logline E-Mail senden" | tee -a $LogFile
-        echo -e "Verschoben nach:\t ~/NAS_HD$pfad/\n\nGroesse:\t$Final2 MB\n\n\nSincerly\nyour lovely NAS" | mailx -s "INFO: $mailtitle runtergeladen" hfdgdg7@gmail.com;
+        echo "$logline PUSH senden" | tee -a $LogFile
+        API="YOURKEY"
+        curl -u $API: https://api.pushbullet.com/v2/pushes -d type=note -d title="INFO: $mailtitle runtergeladen" -d body="Verschoben nach:\t ~/NAS_HD$pfad/\n\nGroesse:\t$Final2 MB\n\n\nSincerly\nyour lovely NAS"
+        #echo -e "Verschoben nach:\t ~/NAS_HD$pfad/\n\nGroesse:\t$Final2 MB\n\n\nSincerly\nyour lovely NAS" | mailx -s "INFO: $mailtitle runtergeladen" hfdgdg7@gmail.com;
 fi
