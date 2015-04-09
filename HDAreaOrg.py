@@ -19,7 +19,7 @@ def notifyPushover(api ='', msg='',location=''):
         'message': "\n\n".join(msg)
     })
     try:
-        req = urllib2.Request(config['api'], data)
+        req = urllib2.Request('https://api.pushover.net/1/messages.json', data)
         response = urllib2.urlopen(req)
     except urllib2.HTTPError:
         print 'Failed much'
@@ -52,7 +52,7 @@ def notifyPushbullet(api='', msg='',location=''):
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
-    __version__ = "1.5"
+    __version__ = "1.51"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
