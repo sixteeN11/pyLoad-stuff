@@ -22,7 +22,7 @@ def notify(api ='', msg=''):
         'message': "\n\n".join(msg)
     })
     try:
-        req = urllib2.Request(config['api'], data)
+        req = urllib2.Request('https://api.pushover.net/1/messages.json', data)
         response = urllib2.urlopen(req)
     except urllib2.HTTPError:
         print 'Failed much'
