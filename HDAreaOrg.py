@@ -1,8 +1,7 @@
 from module.plugins.Hook import Hook 
-import feedparser, re, urllib2, urllib, httplib, pycurl
+import feedparser, re, urllib2, urllib, httplib, base64, json
 from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
-
 
 def replaceUmlauts(title):
     title = title.replace(unichr(228), "ae").replace(unichr(196), "Ae")
@@ -11,25 +10,35 @@ def replaceUmlauts(title):
     title = title.replace(unichr(223), "ss")
     title = title.replace('&amp;', "&")
     return title
-def notifyPushover(apikey, message):
+
+def notifyPushover(apikey, message,location=''):
     if apikey == "0" or apikey == "":
         return
     data = '{"token":"aD1MxoNvGY1S5zaTM7rGjhDkXDpoS2","user":apikey,"message":"%s","title":"pyLoad: Package added!"}' %" ### ".join(message).decode("utf-8")
     conn = httplib.HTTPSConnection("api.pushover.net:443")
     conn.request("POST", "/1/messages.json", urllib.urlencode(data), { "Content-type": "application/x-www-form-urlencoded" })
     result = conn.getresponse()
-def notifyPushbullet(apikey,text):
-    if apikey == "0" or apikey == "":
-        return
-    postData =  '{"type":"note", "title":"pyLoad: Package added!", "body":"%s"}' %" ### ".join(text).encode("utf-8")
-    c = pycurl.Curl()
-    c.setopt(pycurl.WRITEFUNCTION, lambda x: None)
-    c.setopt(pycurl.URL, 'https://api.pushbullet.com/v2/pushes')
-    c.setopt(pycurl.HTTPHEADER, ['Content-Type: application/json'])
-    c.setopt(pycurl.USERPWD, apikey.encode('utf-8'))
-    c.setopt(pycurl.POST, 1)
-    c.setopt(pycurl.POSTFIELDS, postData)
-    c.perform()
+
+def notifyPushbullet(api='', msg='',location=''):
+    data = urllib.urlencode({
+        'type': 'note',
+        'title': 'pyLoad: HDAreaHook added Package to %s' %location,
+        'body': "\n".join(msg)
+    })
+    auth = base64.encodestring('%s:' %api).replace('\n', '')
+    try:
+        req = urllib2.Request('https://api.pushbullet.com/v2/pushes', data)
+        req.add_header('Authorization', 'Basic %s' % auth)
+        response = urllib2.urlopen(req)
+    except urllib2.HTTPError:
+        print 'Failed much'
+        return False
+    res = json.load(response)
+    if res['sender_name']:
+        print 'Pushbullet Success'
+    else:
+        print 'Pushbullet Fail'
+
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
     __version__ = "1.3"
@@ -52,7 +61,8 @@ class HDAreaOrg(Hook):
     def setup(self):
         self.interval = self.getConfig("interval") * 60
     def periodical(self):
-        self.added_items = []
+        self.added_items1 = []
+        self.added_items2 = []
         for site in ('top-rls','movies','msd','Old_Stuff'):
             address = ('http://hd-area.org/index.php?s=' + site)
             req_page = getURL(address)
@@ -63,8 +73,10 @@ class HDAreaOrg(Hook):
             req_page = getURL(address)
             soup = BeautifulSoup(req_page)
             self.get_title(soup)
-        notifyPushover(self.getConfig("pushoverapi"),self.added_items) if len(self.added_items) > 0 else True
-        notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True  
+        notifyPushover(self.getConfig("pushoverapi"),self.added_items1,"QUEUE") if len(self.added_items1) > 0 else True
+        notifyPushover(self.getConfig("pushoverapi"),self.added_items2,"COLLECTOR") if len(self.added_items2) > 0 else True
+        notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items1,"QUEUE") if len(self.added_items1) > 0 else True
+        notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items2,"COLLECTOR") if len(self.added_items2) > 0 else True  
     def get_title(self,soup1):
         for all in soup1.findAll("div", {"class" : "topbox"}):
             for title in all.findAll("div", {"class" : "title"}):
@@ -138,8 +150,9 @@ class HDAreaOrg(Hook):
                     if (rating < self.getConfig("conf_rating_queue")) and (rating > self.getConfig("conf_rating_collector")):
                         self.core.log.info("HDaFetcher:\tCOLLECTOR: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
-                        self.added_items.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating) 
+                        self.added_items2.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating) 
                     elif rating > self.getConfig("conf_rating_queue"):
                         self.core.log.info("HDaFetcher:\tQUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
-                        self.added_items.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating)
+                        self.added_items1.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating)
+
