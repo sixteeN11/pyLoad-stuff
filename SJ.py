@@ -1,5 +1,5 @@
 from module.plugins.Hook import Hook 
-import feedparser, re, urllib, httplib, codecs
+import feedparser, re, urllib, httplib, codecs, base64, json
 from module.network.RequestFactory import getURL 
 from BeautifulSoup import BeautifulSoup
 import smtplib
@@ -14,11 +14,24 @@ def getSeriesList(file):
     f.close()
     return titles 
     
-def notify(title, message, api):
-    data = {"token":"aBGPe78hyxBKfRawhuGbzttrEaQ9rW","user":api,"message":message,"title":title}
-    conn = httplib.HTTPSConnection("api.pushover.net:443")
-    conn.request("POST", "/1/messages.json", urllib.urlencode(data), { "Content-type": "application/x-www-form-urlencoded" })
-    result = conn.getresponse()
+def notify(api ='', msg=''):
+    data = urllib.urlencode({
+        'user': api,
+        'token': 'aBGPe78hyxBKfRawhuGbzttrEaQ9rW',
+        'title': 'pyLoad: SJHook added Package',
+        'message': "\n\n".join(msg)
+    })
+    try:
+        req = urllib2.Request(config['api'], data)
+        response = urllib2.urlopen(req)
+    except urllib2.HTTPError:
+        print 'Failed much'
+        return False
+    res = json.load(response)
+    if res['status'] == 1:
+        print 'Pushover Success'
+    else:
+        print 'Pushover Fail' 
     
 def send_mail(text):
     """Tested with googlemail.com and bitmessage.ch. It should work with all mailservices which provide SSL access.""" 
@@ -44,22 +57,29 @@ def send_mail(text):
     server.sendmail(fromaddr, toaddrs, msg)
     server.quit()
     
-def notifyPushbullet(apikey,text):
-    if apikey == "0" or apikey == "":
-        return
-    postData =  '{"type":"note", "title":"pyLoad: Package added!", "body":"%s"}' %" ### ".join(text).encode("utf-8")
-    c = pycurl.Curl()
-    c.setopt(pycurl.WRITEFUNCTION, lambda x: None)
-    c.setopt(pycurl.URL, 'https://api.pushbullet.com/v2/pushes')
-    c.setopt(pycurl.HTTPHEADER, ['Content-Type: application/json'])
-    c.setopt(pycurl.USERPWD, apikey.encode('utf-8'))
-    c.setopt(pycurl.POST, 1)
-    c.setopt(pycurl.POSTFIELDS, postData)
-    c.perform()
+def notifyPushbullet(api='', msg=''):
+    data = urllib.urlencode({
+        'type': 'note',
+        'title': 'pyLoad: SJHook added Package',
+        'body': "\n\n".join(msg)
+    })
+    auth = base64.encodestring('%s:' %api).replace('\n', '')
+    try:
+        req = urllib2.Request('https://api.pushbullet.com/v2/pushes', data)
+        req.add_header('Authorization', 'Basic %s' % auth)
+        response = urllib2.urlopen(req)
+    except urllib2.HTTPError:
+        print 'Failed much'
+        return False
+    res = json.load(response)
+    if res['sender_name']:
+        print 'Pushbullet Success'
+    else:
+        print 'Pushbullet Fail'
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.09"
+    __version__ = "1.5"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
@@ -137,7 +157,7 @@ class SJ(Hook):
                         
         send_mail(self.added_items) if len(self.added_items) > 0 else True
         notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True
-            
+        notify(self.getConfig("pushover"),self.added_items) if len(self.added_items) > 0 else True  
                     
     def range_checkr(self, link, title):
         pattern = re.match(".*S\d{2}E\d{2}-\w?\d{2}.*", title)
@@ -190,7 +210,5 @@ class SJ(Hook):
         else:
             self.core.log.info("SJFetcher - NEW EPISODE: " + title)
             self.setStorage(title, 'downloaded')
-            if self.getConfig('pushover'):
-                notify("SJ: Added package",title.encode("utf-8"),self.getConfig("pushover"))
             self.core.api.addPackage(title.encode("utf-8"), link, 1 if self.getConfig("queue") else 0)
             self.added_items.append(title.encode("utf-8"))

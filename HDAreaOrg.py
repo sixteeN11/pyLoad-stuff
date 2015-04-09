@@ -11,19 +11,30 @@ def replaceUmlauts(title):
     title = title.replace('&amp;', "&")
     return title
 
-def notifyPushover(apikey, message,location=''):
-    if apikey == "0" or apikey == "":
-        return
-    data = '{"token":"aD1MxoNvGY1S5zaTM7rGjhDkXDpoS2","user":apikey,"message":"%s","title":"pyLoad: Package added!"}' %" ### ".join(message).decode("utf-8")
-    conn = httplib.HTTPSConnection("api.pushover.net:443")
-    conn.request("POST", "/1/messages.json", urllib.urlencode(data), { "Content-type": "application/x-www-form-urlencoded" })
-    result = conn.getresponse()
+def notifyPushover(api ='', msg='',location=''):
+    data = urllib.urlencode({
+        'user': api,
+        'token': 'aBGPe78hyxBKfRawhuGbzttrEaQ9rW',
+        'title': 'pyLoad: HDAreaHook added Package to %s' %location,
+        'message': "\n\n".join(msg)
+    })
+    try:
+        req = urllib2.Request(config['api'], data)
+        response = urllib2.urlopen(req)
+    except urllib2.HTTPError:
+        print 'Failed much'
+        return False
+    res = json.load(response)
+    if res['status'] == 1:
+        print 'Pushover Success'
+    else:
+        print 'Pushover Fail' 
 
 def notifyPushbullet(api='', msg='',location=''):
     data = urllib.urlencode({
         'type': 'note',
         'title': 'pyLoad: HDAreaHook added Package to %s' %location,
-        'body': "\n".join(msg)
+        'body': "\n\n".join(msg)
     })
     auth = base64.encodestring('%s:' %api).replace('\n', '')
     try:
@@ -41,7 +52,7 @@ def notifyPushbullet(api='', msg='',location=''):
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
-    __version__ = "1.3"
+    __version__ = "1.5"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
