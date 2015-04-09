@@ -1,5 +1,5 @@
 from module.plugins.Hook import Hook 
-import feedparser, re, urllib, httplib, codecs, base64, json
+import feedparser, re, urllib, urllib2, httplib, codecs, base64, json
 from module.network.RequestFactory import getURL 
 from BeautifulSoup import BeautifulSoup
 import smtplib
@@ -79,7 +79,7 @@ def notifyPushbullet(api='', msg=''):
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.5"
+    __version__ = "1.51"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
