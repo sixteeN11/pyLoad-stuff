@@ -76,8 +76,9 @@ class FileBot(Hook):
     event_list = ["package_extracted", "packageFinished"]
 
     def packageFinished(self, pypack):
-        self.core.api.setConfigValue("ExtractArchive", "delete", "Permanent", section='plugin')
+        self.core.api.setConfigValue("ExtractArchive", "delete", "True", section='plugin')
         #self.core.api.setConfigValue("FileBot", "exec", 'cd / && ./filebot.sh "{file}"', section='plugin')
+        self.core.api.setConfigValue("ExtractArchive", "deltotrash", "False", section='plugin')
         x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
@@ -94,8 +95,9 @@ class FileBot(Hook):
             self.Finished(folder)
 
     def package_extracted(self, pypack):
-        self.core.api.setConfigValue("ExtractArchive", "delete", "Permanent", section='plugin')
+        self.core.api.setConfigValue("ExtractArchive", "delete", "True", section='plugin')
         #self.core.api.setConfigValue("FileBot", "exec", 'cd / && ./filebot.sh "{file}"', section='plugin')
+        self.core.api.setConfigValue("ExtractArchive", "deltotrash", "False", section='plugin')
         x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
