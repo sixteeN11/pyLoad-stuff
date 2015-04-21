@@ -74,11 +74,13 @@ class FileBot(Hook):
     __author_mail__ = ("branko.wilhelm@gmail.com", "screver@gmail.com", "unwichtig@gmail.com")
 
     event_list = ["package_extracted", "packageFinished"]
+    
+    def coreReady(self):
+        self.core.api.setConfigValue("ExtractArchive", "delete", "True", section='plugin')
+        self.core.api.setConfigValue("ExtractArchive", "deltotrash", "False", section='plugin')
+        #self.core.api.setConfigValue("FileBot", "exec", 'cd / && ./filebot.sh "{file}"', section='plugin')
 
     def packageFinished(self, pypack):
-        self.core.api.setConfigValue("ExtractArchive", "delete", "True", section='plugin')
-        #self.core.api.setConfigValue("FileBot", "exec", 'cd / && ./filebot.sh "{file}"', section='plugin')
-        self.core.api.setConfigValue("ExtractArchive", "deltotrash", "False", section='plugin')
         x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
@@ -86,7 +88,7 @@ class FileBot(Hook):
         for root, dirs, files in os.walk(folder):
             for name in files:
                 if name.endswith((".rar", ".r0", ".r12")):
-                    self.core.log.debug("Hier sind noch Arhive")
+                    self.core.log.debug("Hier sind noch Archive")
                     x = True
                 break
             break
@@ -95,9 +97,6 @@ class FileBot(Hook):
             self.Finished(folder)
 
     def package_extracted(self, pypack):
-        self.core.api.setConfigValue("ExtractArchive", "delete", "True", section='plugin')
-        #self.core.api.setConfigValue("FileBot", "exec", 'cd / && ./filebot.sh "{file}"', section='plugin')
-        self.core.api.setConfigValue("ExtractArchive", "deltotrash", "False", section='plugin')
         x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
