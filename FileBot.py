@@ -78,6 +78,7 @@ class FileBot(Hook):
     def coreReady(self):
         self.core.api.setConfigValue("ExtractArchive", "delete", "True", section='plugin')
         self.core.api.setConfigValue("ExtractArchive", "deltotrash", "False", section='plugin')
+        self.core.api.setConfigValue("general", "folder_per_package", "True", section='core')
         #self.core.api.setConfigValue("FileBot", "exec", 'cd / && ./filebot.sh "{file}"', section='plugin')
 
     def packageFinished(self, pypack):
