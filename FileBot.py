@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import subprocess, re, os, fileinput
+import subprocess, re, os
 from os import listdir, access, X_OK, makedirs
 from os.path import join, exists, basename
 
@@ -24,7 +24,7 @@ from module.utils import save_join
 
 class FileBot(Hook):
     __name__ = "FileBot"
-    __version__ = "0.5"
+    __version__ = "0.52"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
