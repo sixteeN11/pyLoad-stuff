@@ -99,8 +99,16 @@ class FileBot(Hook):
 
     def package_extracted(self, pypack):
         x = False
+
         download_folder = self.config['general']['download_folder']
-        folder = save_join(download_folder, pypack.folder)
+        extract_destination = self.core.api.getConfigValue("ExtractArchive", "destination", section='plugin')
+        extract_subfolder = self.core.api.getConfigValue("ExtractArchive", "subfolder", section='plugin')
+        # determine output folder
+        folder = save_join(download_folder, pypack.folder, extract_destination, "")  #: force trailing slash
+
+        if extract_subfolder:
+            folder = save_join(folder, pypack.folder)
+
         self.core.log.debug("FileBot-Hook: MKV-Checkup (package_extracted)")
         for root, dirs, files in os.walk(folder):
             for name in files:
