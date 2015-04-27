@@ -4,8 +4,6 @@
 DATE=$(date +%d.%m.%Y\ %H:%M:%S)
 logline=$(date +'%d.%m.%Y')" "$(date +'%H:%M:%S')" FileBot"
 LogFile=/root/.pyload/Logs/log.txt
-## DTS2AC3 um den Datentransfer von OSDrive zu NASDrive zu umgehen (NASHD -> NASHD)
-##tmpFolder=$MediaDir/tmp
 
 ## String Manipulation
 mailtitle_ext=${1##*/}
