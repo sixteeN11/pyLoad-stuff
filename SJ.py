@@ -94,6 +94,10 @@ class SJ(Hook):
                   ("pushbulletapi","str","Your Pushbullet-API key","0")]
     __author_name__ = ("gutz-pilz","zapp-brannigan")
     __author_mail__ = ("unwichtig@gmail.com","")
+    
+    def coreReady(self):
+        self.core.api.setConfigValue("SerienjunkiesOrg", "changeNameSJ", "Packagename", section='plugin')
+        self.core.api.setConfigValue("SerienjunkiesOrg", "changeNameDJ", "Packagename", section='plugin')
 
     def setup(self):
         self.interval = self.getConfig("interval") * 60
