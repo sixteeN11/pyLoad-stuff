@@ -52,19 +52,19 @@ def notifyPushbullet(api='', msg='',location=''):
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
-    __version__ = "1.51"
+    __version__ = "1.6"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
-                  ("rejectList", "str", "reject (; getrennt)", "dd51;itunes"),
-                  ("cinedubs", "bool", "Fetch Cinedubs", "False"),
-                  ("conf_rating_collector","float","Collector Rating","6.1"),
-                  ("conf_rating_queue","float","Queue Rating","7.1"),
-                  ("interval", "int", "Check interval in minutes", "60"),
-                  ("conf_year","long","Min Year","1990"),
-                  ("rej_genre","str","Reject Genre","Family;Anime;Documentary"),
+                  ("rejectList", "str", "ablehnen (; getrennt)", "dd51;itunes"),
+                  ("cinedubs", "bool", "Cinedubs einbeziehen ?", "False"),
+                  ("conf_rating_collector","float","Collector Bewertung","6.1"),
+                  ("conf_rating_queue","float","Queue Bewertung","7.1"),
+                  ("interval", "int", "Intervall", "60"),
+                  ("conf_year","long","Maximales Alter","1990"),
+                  ("rej_genre","str","Genre ablehnen","Family;Anime;Documentary"),
                   ("pushoverapi", "str", "Dein Pushover-API-Key", "0"),
-                  ("hoster", "str", "Preferred Hoster (seperated by ;)","uploaded;uplaoded;oboom;cloudzer;filemonkey"),
+                  ("hoster", "str", "Bevorzugte Hoster (durch ; getrennt)","uploaded;uplaoded;oboom;cloudzer;filemonkey"),
                   ("pushbulletapi","str","Dein Pushbullet-API-Key","0")]
     __author_name__ = ("gutz-pilz")
     __author_mail__ = ("unwichtig@gmail.com")
@@ -72,9 +72,9 @@ class HDAreaOrg(Hook):
     def setup(self):
         self.interval = self.getConfig("interval") * 60
     def periodical(self):
-        self.added_items1 = []
-        self.added_items2 = []
-        for site in ('top-rls','movies','msd','Old_Stuff'):
+        self.items_to_queue = []
+        self.items_to_collector = []
+        for site in ('top-rls','movies','Old_Stuff'):
             address = ('http://hd-area.org/index.php?s=' + site)
             req_page = getURL(address)
             soup = BeautifulSoup(req_page)
@@ -84,10 +84,12 @@ class HDAreaOrg(Hook):
             req_page = getURL(address)
             soup = BeautifulSoup(req_page)
             self.get_title(soup)
-        notifyPushover(self.getConfig("pushoverapi"),self.added_items1,"QUEUE") if len(self.added_items1) > 0 else True
-        notifyPushover(self.getConfig("pushoverapi"),self.added_items2,"COLLECTOR") if len(self.added_items2) > 0 else True
-        notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items1,"QUEUE") if len(self.added_items1) > 0 else True
-        notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items2,"COLLECTOR") if len(self.added_items2) > 0 else True  
+        if self.getConfig('pushoverapi'):
+            notifyPushover(self.getConfig("pushoverapi"),self.items_to_queue,"QUEUE") if len(self.items_to_queue) > 0 else True
+            notifyPushover(self.getConfig("pushoverapi"),self.items_to_collector,"COLLECTOR") if len(self.items_to_collector) > 0 else True
+        if self.getConfig('pushbulletapi'):
+            notifyPushbullet(self.getConfig("pushbulletapi"),self.items_to_queue,"QUEUE") if len(self.items_to_queue) > 0 else True
+            notifyPushbullet(self.getConfig("pushbulletapi"),self.items_to_collector,"COLLECTOR") if len(self.items_to_collector) > 0 else True  
     def get_title(self,soup1):
         for all in soup1.findAll("div", {"class" : "topbox"}):
             for title in all.findAll("div", {"class" : "title"}):
@@ -161,9 +163,9 @@ class HDAreaOrg(Hook):
                     if (rating < self.getConfig("conf_rating_queue")) and (rating > self.getConfig("conf_rating_collector")):
                         self.core.log.info("HDaFetcher:\tCOLLECTOR: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
-                        self.added_items2.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating) 
+                        self.items_to_collector.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating) 
                     elif rating > self.getConfig("conf_rating_queue"):
                         self.core.log.info("HDaFetcher:\tQUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
-                        self.added_items1.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating)
+                        self.items_to_queue.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating)
 
