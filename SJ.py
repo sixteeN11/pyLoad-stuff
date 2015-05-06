@@ -91,7 +91,7 @@ class SJ(Hook):
                   ("hoster", """ul;so;fm;cz;alle""", "ul.to, filemonkey, cloudzer, share-online oder alle", "ul"),
                   ("pushover", "str", "deine pushover api", ""),
                   ("queue", "bool", "Direkt in die Warteschlange?", "False"),
-                  ("pushbulletapi","str","Your Pushbullet-API key","0")]
+                  ("pushbulletapi","str","Your Pushbullet-API key","")]
     __author_name__ = ("gutz-pilz","zapp-brannigan")
     __author_mail__ = ("unwichtig@gmail.com","")
     
