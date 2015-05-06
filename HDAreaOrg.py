@@ -63,9 +63,9 @@ class HDAreaOrg(Hook):
                   ("interval", "int", "Intervall", "60"),
                   ("conf_year","long","Maximales Alter","1990"),
                   ("rej_genre","str","Genre ablehnen","Family;Anime;Documentary"),
-                  ("pushoverapi", "str", "Dein Pushover-API-Key", "0"),
+                  ("pushoverapi", "str", "Dein Pushover-API-Key", ""),
                   ("hoster", "str", "Bevorzugte Hoster (durch ; getrennt)","uploaded;uplaoded;oboom;cloudzer;filemonkey"),
-                  ("pushbulletapi","str","Dein Pushbullet-API-Key","0")]
+                  ("pushbulletapi","str","Dein Pushbullet-API-Key","")]
     __author_name__ = ("gutz-pilz")
     __author_mail__ = ("unwichtig@gmail.com")
 
