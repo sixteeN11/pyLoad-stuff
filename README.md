@@ -6,6 +6,7 @@
  - Definiere deine bevorzugten Hoster
  - Schliesse ungewollte Genre aus
  - Pushover und PushPullet Notifications.
+ - 
 
 [[Hook] SJ.py](SJ.py)
 ==============
@@ -19,6 +20,9 @@
 .deutsch.*mord.mit.aussicht.*720p.*
 ```
  - Pushover und Pushbullet notifications
+ 
+ Forumslink:
+ `http://forum.pyload.org/viewtopic.php?f=9&t=3580`
 
 [[Hook] FileBot.py](FileBot.py)
 ==============
