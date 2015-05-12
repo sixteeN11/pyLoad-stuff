@@ -30,10 +30,10 @@ restart pyload and configure it.
 
 [FileBot.sh](filebot.sh)
 ==============
-Some additional stuff happening to the moved File
- - modify creation date (to have it stored "recently added" in XBMC)
- - make it read / writeable for everyone (something i need to do)
- - send email/pushbullet with location of the file and changed filesize (nice to have)
+Extra Skript um zusätzlich Befehle auf die von Filebot bewegte Datei auszuführen
+ - Erstellungsdatum auf "jetzt" setzen
+ - Lese und Schreibrechte für jedermann
+ - sende email/pushbullet mit Pfad und GrößenInformation
  
 
 Have fun
