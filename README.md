@@ -1,19 +1,23 @@
 [[Hook] HDAreaOrg.py](HDAreaOrg.py)
 ==============
- - standalone Moviefetcher
- - gets all Movies from HD-AR** and grab rating, title and genre from IMDb
- - gets a clean title from imdb (year)
- - gets only your preferred hoster
- - 2 factor rating - one for directly adding it to the Queue and one for later decision to the Collector
- - decide which genre you'd not want to download
- - pushover notifications
+ - eigenständiger Moviefetcher
+ - Sucht jede Kategorie nach neuen Filmen ab und fügt diese pyLoad hinzu
+ - Minimum Rating für Queue und Collector
+ - Definiere deine bevorzugten Hoster
+ - Schliesse ungewollte Genre aus
+ - Pushover und PushPullet Notifications.
 
 [[Hook] SJ.py](SJ.py)
 ==============
- - uses the serienjunk**s episode rss to fetch the latest episodes
- - decide which quality, language and hoster you prefer
- - create a SJ.txt in your pyload folder with all the seriesnames (each a new line)
- - pushover notifications
+ - Sucht den serienjunk**s rss nach neuen Episoden ab.
+ - Setze Qualität, Sprache und ReleaseGroup individuell über eine Textdatei fest
+ - erstelle eine SJ.txt in deinem pyload ordner
+  `.englisch.*gravity.falls.*720p.*
+  .englisch.*game.of.thrones.*1080p.*
+  .deutsch.*sherlock.*720p.*
+  .deutsch.*boardwalk.empire.*720p.*
+  .deutsch.*mord.mit.aussicht.*720p.*
+ - Pushover und Pushbullet notifications`
 
 [[Hook] FileBot.py](FileBot.py)
 ==============
