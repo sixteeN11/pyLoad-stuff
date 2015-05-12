@@ -84,10 +84,10 @@ class HDAreaOrg(Hook):
             req_page = getURL(address)
             soup = BeautifulSoup(req_page)
             self.get_title(soup)
-        if self.getConfig('pushoverapi'):
+        if len(self.getConfig('pushoverapi')) > 2:
             notifyPushover(self.getConfig("pushoverapi"),self.items_to_queue,"QUEUE") if len(self.items_to_queue) > 0 else True
             notifyPushover(self.getConfig("pushoverapi"),self.items_to_collector,"COLLECTOR") if len(self.items_to_collector) > 0 else True
-        if self.getConfig('pushbulletapi'):
+        if len(self.getConfig('pushbulletapi')) > 2:
             notifyPushbullet(self.getConfig("pushbulletapi"),self.items_to_queue,"QUEUE") if len(self.items_to_queue) > 0 else True
             notifyPushbullet(self.getConfig("pushbulletapi"),self.items_to_collector,"COLLECTOR") if len(self.items_to_collector) > 0 else True  
     def get_title(self,soup1):
