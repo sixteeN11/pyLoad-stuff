@@ -10,8 +10,8 @@
 [[Hook] SJ.py](SJ.py)
 ==============
  - Sucht den serienjunk**s rss nach neuen Episoden ab.
- - Setze Qualität, Sprache und ReleaseGroup individuell über eine Textdatei fest
- - erstelle eine SJ.txt in deinem pyload ordner
+ - Definiere Serie und deren Qualität, Sprache, ReleaseGroup individuell über eine Textdatei fest
+ - erstelle eine SJ.txt in deinem pyload ordner.
 ```.englisch.*gravity.falls.*720p.*
 .englisch.*game.of.thrones.*1080p.*
 .deutsch.*sherlock.*720p.*
