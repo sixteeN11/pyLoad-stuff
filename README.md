@@ -33,6 +33,8 @@ This Hook uses the FileBot program from rednoah to have downloaded Movies/Series
 download FileBot.py and copy it into your pyload/userplugins/hooks folder.
 restart pyload and configure it.
 
+Forumslink:
+ `http://forum.pyload.org/viewtopic.php?f=9&t=2984`
 
 [FileBot.sh](filebot.sh)
 ==============
@@ -41,6 +43,6 @@ Extra Skript um zusätzlich Befehle auf die von Filebot bewegte Datei auszuführ
  - Lese und Schreibrechte für jedermann
  - sende email/pushbullet mit Pfad und GrößenInformation
  
-
+ 
 Have fun
 Gutz-Pilz
