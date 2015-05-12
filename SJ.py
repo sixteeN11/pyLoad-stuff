@@ -14,7 +14,7 @@ def getSeriesList(file):
     f.close()
     return titles 
     
-def notify(api ='', msg=''):
+def notifyPushover(api ='', msg=''):
     data = urllib.urlencode({
         'user': api,
         'token': 'aBGPe78hyxBKfRawhuGbzttrEaQ9rW',
@@ -32,30 +32,6 @@ def notify(api ='', msg=''):
         print 'Pushover Success'
     else:
         print 'Pushover Fail' 
-    
-def send_mail(text):
-    """Tested with googlemail.com and bitmessage.ch. It should work with all mailservices which provide SSL access.""" 
-    serveraddr = ''
-    serverport = '465'
-    username = ''
-    password = ''
-    fromaddr = ''
-    toaddrs  = ''
-    
-    if toaddrs == "":
-        return
-
-    subject = "pyLoad: Package added!"
-    msg = "\n".join(text)
-
-    header = "To: %s\nFrom:%s\nSubject:%s\n" %(toaddrs,fromaddr,subject)
-    msg = header + "\n" + msg
-
-    server = smtplib.SMTP_SSL(serveraddr,serverport)
-    server.ehlo()
-    server.login(username,password)
-    server.sendmail(fromaddr, toaddrs, msg)
-    server.quit()
     
 def notifyPushbullet(api='', msg=''):
     data = urllib.urlencode({
@@ -89,7 +65,7 @@ class SJ(Hook):
                   ("language", """DEUTSCH;ENGLISCH""", "Sprache", "DEUTSCH"),
                   ("interval", "int", "Interval", "60"),
                   ("hoster", """ul;so;fm;cz;alle""", "ul.to, filemonkey, cloudzer, share-online oder alle", "ul"),
-                  ("pushover", "str", "deine pushover api", ""),
+                  ("pushoverapi", "str", "deine pushoverapi api", ""),
                   ("queue", "bool", "Direkt in die Warteschlange?", "False"),
                   ("pushbulletapi","str","Your Pushbullet-API key","")]
     __author_name__ = ("gutz-pilz","zapp-brannigan")
@@ -157,11 +133,11 @@ class SJ(Hook):
                                 self.core.log.debug("SJFetcher - Abgelehnt: " + title)
                                 continue
                             title = re.sub('\[.*\] ', '', post.title)
-                            self.range_checkr(link,title)
-                        
-        send_mail(self.added_items) if len(self.added_items) > 0 else True
-        notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True
-        notify(self.getConfig("pushover"),self.added_items) if len(self.added_items) > 0 else True  
+
+        if len(self.getConfig('pushbulletapi')) > 2:
+            notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True
+        if len(self.getConfig('pushoverapi')) > 2:
+            notifyPushover(self.getConfig("pushoverapi"),self.added_items) if len(self.added_items) > 0 else True  
                     
     def range_checkr(self, link, title):
         pattern = re.match(".*S\d{2}E\d{2}-\w?\d{2}.*", title)
