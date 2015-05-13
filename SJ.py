@@ -6,13 +6,22 @@ import smtplib
 import pycurl
 
 def getSeriesList(file):
-    titles = []
-    f = codecs.open(file, "rb", "utf-8")
-    for title in f.read().splitlines():
-        title = title.replace(" ", ".")
-        titles.append(title)
-    f.close()
-    return titles 
+    try:
+        titles = []
+        f = codecs.open(file, "rb", "utf-8")
+        for title in f.read().splitlines():
+            if len(title) == 0:
+                continue
+            title = title.replace(" ", ".")
+            titles.append(title)
+        f.close()
+        return titles
+    except UnicodeError:
+        self.core.log.error("SJFetcher - Abbruch, es befinden sich ungueltige Zeichen in der Suchdatei!")
+    except IOError:
+        self.core.log.error("SJFetcher - Abbruch, Suchdatei wurde nicht gefunden!")
+    except Exception, e:
+        self.core.log.error("SJFetcher - Unbekannter Fehler: %s" %e)
     
 def notifyPushover(api ='', msg=''):
     data = urllib.urlencode({
@@ -55,7 +64,7 @@ def notifyPushbullet(api='', msg=''):
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.51"
+    __version__ = "1.52"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
