@@ -55,7 +55,7 @@ if [[ $1 == *".mkv" ]] || [[ $1 == *".avi" ]] || [[ $1 == *".mp4" ]]; then
     mount -a
     echo "$logline NAS ist online - verschiebe Datei dorthin" | tee -a $LogFile
     push "$1" "online"
-    rsync --remove-source-files -rvhn "$1" "/mnt/HD/NAS_Medien$pfad/" --exclude='Music' --exclude='TVHeadend' --exclude='Anime' | grep -E '*mkv|*avi|*mp4'
+    rsync --remove-source-files -rvh "$1" "/mnt/HD/NAS_Medien$pfad/" --exclude='Music' --exclude='TVHeadend' --exclude='Anime' | grep -E '*mkv|*avi|*mp4'
   else
     echo "$logline NAS ist offline - verschiebe keine Daten" | tee -a $LogFile
     push "$1" "offline"
