@@ -6,7 +6,7 @@ pfad_00=${1%/*.mkv}
 pfad=${pfad_00##*/Medien}
 
 ##Pushbullet API
-API="n6n3Zb1wkwWhyTist1uX7GiAUdmLk8Ou"
+API="n6n3Zb1xxxist1uX...UdmLk8Ou"
 
 ## Schreib was in den pyLoad Log
 echo  "ExternaScript:  ##########################"
