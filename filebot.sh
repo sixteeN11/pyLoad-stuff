@@ -6,7 +6,7 @@ pfad_00=${1%/*.mkv}
 pfad=${pfad_00##*/Medien}
 
 ##Pushbullet API
-API="n6xxxxxxxxxxxxxxxx7GiAUdmLk8Ou"
+API="nxxxxx"
 
 echo  "ExternalScript:  ##########################"
 echo  "ExternalScript:  Dateihandling nachdem FILEBOT fertig ist"
@@ -46,20 +46,26 @@ if [ -f "$1" ];then
 	  fi
 	}
 
-	if [[ $1 == *".mkv" ]] || [[ $1 == *".avi" ]] || [[ $1 == *".mp4" ]]; then
 	## Sende Dateien an NAS (wenn er online ist)
-	  if ping -c4 192.168.0.107 2>&1 >/dev/null; then
-		mount -a
+	if ping -c4 192.168.0.107 2>&1 >/dev/null; then
 		echo "ExternalScript:  NAS ist online - verschiebe Datei dorthin"
-		push "$1" "online"
+		mount -a
 		rsync --remove-source-files -rvh "$1" "/mnt/HD/NAS_Medien$pfad/" --exclude='Music' --exclude='TVHeadend' --exclude='Anime' | grep -E '*mkv|*avi|*mp4' 2>&1 >/dev/null
-	  else
+		if [[ $1 == *".mkv" ]] || [[ $1 == *".avi" ]] || [[ $1 == *".mp4" ]]; then
+			push "$1" "online"
+		else
+			echo "ExternalScript:  $mailtitle_ext ist kein Film"
+		fi
+	else
 		echo "ExternalScript:  NAS ist offline - verschiebe keine Daten"
 		push "$1" "offline"
-	  fi
-	else
-	  echo "ExternalScript:  $mailtitle_ext ist kein Film"
-	fi
+		if [[ $1 == *".mkv" ]] || [[ $1 == *".avi" ]] || [[ $1 == *".mp4" ]]; then
+			push "$1" "offline"
+		else
+			echo "ExternalScript:  $mailtitle_ext ist kein Film"
+		fi
+	fi	
+
 else
 	echo "ExternalScript:  No such File found '$1'"
 fi
