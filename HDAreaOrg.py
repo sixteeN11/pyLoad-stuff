@@ -1,4 +1,4 @@
-from module.plugins.Hook import Hook 
+from module.internal.plugins.Hook import Hook 
 import feedparser, re, urllib2, urllib, httplib, base64, json
 from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
@@ -52,7 +52,7 @@ def notifyPushbullet(api='', msg='',location=''):
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
-    __version__ = "1.6"
+    __version__ = "1.7"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
