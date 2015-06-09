@@ -1,4 +1,4 @@
-from module.plugins.Hook import Hook 
+from module.plugins.internal.Hook import Hook
 import feedparser, re, urllib, urllib2, httplib, codecs, base64, json
 from module.network.RequestFactory import getURL 
 from BeautifulSoup import BeautifulSoup
