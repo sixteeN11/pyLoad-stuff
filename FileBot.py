@@ -17,14 +17,13 @@
 import subprocess, re, os, sys, subprocess
 from os import listdir, access, X_OK, makedirs
 from os.path import join, exists, basename
-
-from module.plugins.Hook import Hook
+from module.plugins.internal.Hook import Hook
 from module.utils import save_join
 
 
 class FileBot(Hook):
     __name__ = "FileBot"
-    __version__ = "0.6"
+    __version__ = "0.7"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
@@ -73,35 +72,46 @@ class FileBot(Hook):
 
                   ("cleanfolder", "bool", "remove DownloadFolder after moving", "False"),
                   
-                  ("output_to_log", "bool", "write FileBot Output to pyLoad Logfile", "True")]
+                  ("output_to_log", "bool", "write FileBot Output to pyLoad Logfile", "True"),
+                  
+                  ("delete_extracted", "bool", "Delete archives after succesful extraction", "True")]
 
     __description__ = "Automated renaming and sorting for tv episodes movies, music and animes"
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
     __author_mail__ = ("branko.wilhelm@gmail.com", "screver@gmail.com", "unwichtig@gmail.com")
 
     event_list = ["package_extracted", "packageFinished"]
-    
+   
+    ##NOTE: change @pyLoad4.10 - remove "delete_extracted" and directly get ExtractArchive setting value
+    ##ExtractArchive settings are not persistant at 4.9
     def coreReady(self):
-        self.core.api.setConfigValue("ExtractArchive", "delete", "True", section='plugin')
-        self.core.api.setConfigValue("ExtractArchive", "deltotrash", "False", section='plugin')
         self.core.api.setConfigValue("general", "folder_per_package", "True", section='core')
-        self.core.api.setConfigValue("FileBot", "exec", 'cd / && ./filebot.sh "{file}"', section='plugin')
+        #self.core.api.setConfigValue("FileBot", "exec", 'cd / && ./filebot.sh "{file}"', section='plugin')
+        if self.getConfig('delete_extracted') is True:
+            self.core.api.setConfigValue("ExtractArchive", "delete", "True", section='plugin')
+            self.core.api.setConfigValue("ExtractArchive", "deltotrash", "False", section='plugin')
+        else:
+            self.core.api.setConfigValue("ExtractArchive", "delete", "False", section='plugin')
 
     def packageFinished(self, pypack):
-        x = False
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
-        self.core.log.debug("FileBot: MKV-Checkup (packageFinished)")
-        for root, dirs, files in os.walk(folder):
-            for name in files:
-                if name.endswith((".rar", ".r0", ".r12")):
-                    self.core.log.debug("FileBot: Hier sind noch Archive")
-                    x = True
+        if self.getConfig('delete_extracted') is True:
+            x = False
+            self.core.log.debug("FileBot: MKV-Checkup (packageFinished)")
+            for root, dirs, files in os.walk(folder):
+                for name in files:
+                    if name.endswith((".rar", ".r0", ".r12")):
+                        self.core.log.debug("FileBot: Hier sind noch Archive")
+                        x = True
+                    break
                 break
-            break
-        if x == False:
-            self.core.log.debug("FileBot: Hier sind keine Archive")
+            if x == False:
+                self.core.log.debug("FileBot: Hier sind keine Archive")
+                self.Finished(folder)
+        else:
             self.Finished(folder)
+            
 
 
     def package_extracted(self, pypack):
@@ -116,17 +126,20 @@ class FileBot(Hook):
 
         if extract_subfolder is True:
             folder = save_join(folder, pypack.folder)
-
-        self.core.log.debug("FileBot: MKV-Checkup (package_extracted)")
-        for root, dirs, files in os.walk(folder):
-            for name in files:
-                if name.endswith((".rar", ".r0", ".r12")):
-                    self.core.log.debug("FileBot: Hier sind noch Archive")
-                    x = True
+        
+        if self.getConfig('delete_extracted') is True:
+            self.core.log.debug("FileBot: MKV-Checkup (package_extracted)")
+            for root, dirs, files in os.walk(folder):
+                for name in files:
+                    if name.endswith((".rar", ".r0", ".r12")):
+                        self.core.log.debug("FileBot: Hier sind noch Archive")
+                        x = True
+                    break
                 break
-            break
-        if x == False:
-            self.core.log.debug("FileBot: Hier sind keine Archive")
+            if x == False:
+                self.core.log.debug("FileBot: Hier sind keine Archive")
+                self.Finished(folder)
+        else:
             self.Finished(folder)
 
 
