@@ -36,7 +36,7 @@ restart pyload and configure it.
 Forumslink:
  `http://forum.pyload.org/viewtopic.php?f=9&t=2984`
 
-[FileBot.sh](filebot.sh)
+[FileBot.sh](https://gist.github.com/Gutz-Pilz)
 ==============
 Extra Skript um zusätzlich Befehle auf die von Filebot bewegte Datei auszuführen
  - Erstellungsdatum auf "jetzt" setzen
