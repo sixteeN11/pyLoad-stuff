@@ -64,7 +64,7 @@ def notifyPushbullet(api='', msg=''):
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.52"
+    __version__ = "1.53"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
@@ -154,14 +154,14 @@ class SJ(Hook):
             range0 = re.sub(r".*S\d{2}E(\d{2}-\w?\d{2}).*",r"\1", title).replace("E","")
             number1 = re.sub(r"(\d{2})-\d{2}",r"\1", range0)
             number2 = re.sub(r"\d{2}-(\d{2})",r"\1", range0)
-            title_cut = re.sub(r"(.*S\d{2}E).*",r"\1",title)
+            title_cut = re.findall(r"(.*S\d{2}E)(\d{2}-\w?\d{2})(.*)",title)
             for count in range(int(number1),(int(number2)+1)):
                 NR = re.match("d\{2}", str(count))
                 if NR is not None:
-                    title1 = title_cut + str(count)
+                    title1 = title_cut[0][0] + str(count) + ".*" + title_cut[0][-1]
                     self.range_parse(link, title1)
                 else:
-                    title1 = title_cut +"0"+ str(count)
+                    title1 = title_cut[0][0] + "0" + str(count) + ".*" + title_cut[0][-1]
                     self.range_parse(link, title1)
         else:
             self.parse_download(link, title)
