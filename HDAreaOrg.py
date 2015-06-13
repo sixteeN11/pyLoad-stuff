@@ -1,14 +1,22 @@
-from module.internal.plugins.Hook import Hook 
+# -*- coding: UTF-8 -*-
+from module.plugins.internal.Hook import Hook
 import feedparser, re, urllib2, urllib, httplib, base64, json
-from BeautifulSoup import BeautifulSoup 
-from module.network.RequestFactory import getURL 
+from BeautifulSoup import BeautifulSoup
+from module.network.RequestFactory import getURL
+
+umlauts = {
+          ord(u'ä'): u'ae',
+          ord(u'ö'): u'oe',
+          ord(u'ü'): u'ue',
+          ord(u'ß'): u'ss',
+          ord(u'Ä'): u'Ae',
+          ord(u'Ö'): u'Oe',
+          ord(u'Ü'): u'Ue',
+        }
 
 def replaceUmlauts(title):
-    title = title.replace(unichr(228), "ae").replace(unichr(196), "Ae")
-    title = title.replace(unichr(252), "ue").replace(unichr(220), "Ue")
-    title = title.replace(unichr(246), "oe").replace(unichr(214), "Oe")
-    title = title.replace(unichr(223), "ss")
-    title = title.replace('&amp;', "&")
+    title = title.decode('utf-8')
+    title = title.translate(umlauts)
     return title
 
 def notifyPushover(api ='', msg='',location=''):
@@ -52,7 +60,7 @@ def notifyPushbullet(api='', msg='',location=''):
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
-    __version__ = "1.7"
+    __version__ = "1.8"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
