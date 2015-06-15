@@ -1,23 +1,16 @@
-# -*- coding: utf-8 -*-
-from module.plugins.internal.Hook import Hook
+from module.plugins.internal.Hook import Hook 
 import feedparser, re, urllib2, urllib, httplib, base64, json
 from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
 
-umlauts = {
-          ord(u'ä'): u'ae',
-          ord(u'ö'): u'oe',
-          ord(u'ü'): u'ue',
-          ord(u'ß'): u'ss',
-          ord(u'Ä'): u'Ae',
-          ord(u'Ö'): u'Oe',
-          ord(u'Ü'): u'Ue',
-        }
-
 def replaceUmlauts(title):
-    title = title.translate(umlauts)
+    title = title.replace(unichr(228), "ae").replace(unichr(196), "Ae")
+    title = title.replace(unichr(252), "ue").replace(unichr(220), "Ue")
+    title = title.replace(unichr(246), "oe").replace(unichr(214), "Oe")
+    title = title.replace(unichr(223), "ss")
+    title = title.replace('&amp;', "&")
     title = "".join(i for i in title if ord(i)<128)
-    return title.encode('utf-8')
+    return title
 
 def notifyPushover(api ='', msg='',location=''):
     data = urllib.urlencode({
@@ -60,11 +53,11 @@ def notifyPushbullet(api='', msg='',location=''):
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
-    __version__ = "1.7"
+    __version__ = "1.8"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
-                  ("rejectList", "str", "ablehnen (; getrennt)", "dd51;itunes"),
+                  ("rejectList", "str", "ablehnen (; getrennt)", "dd51;itunes;doku"),
                   ("cinedubs", "bool", "Cinedubs einbeziehen ?", "False"),
                   ("conf_rating_collector","float","Collector Bewertung","6.1"),
                   ("conf_rating_queue","float","Queue Bewertung","7.1"),
@@ -82,15 +75,15 @@ class HDAreaOrg(Hook):
     def periodical(self):
         self.items_to_queue = []
         self.items_to_collector = []
-        for site in ('top-rls', 'movies', 'Old_Stuff'): #,'Old_Stuff','Old_Stuff'
+        for site in ('top-rls','movies','Old_Stuff'):
             address = ('http://hd-area.org/index.php?s=' + site)
             req_page = getURL(address)
-            soup = BeautifulSoup(req_page.decode('utf-8','ignore'))
+            soup = BeautifulSoup(req_page)
             self.get_title(soup)
         if self.getConfig("cinedubs") == True:
             address = ('http://hd-area.org/index.php?s=Cinedubs')
             req_page = getURL(address)
-            soup = BeautifulSoup(req_page.decode('utf-8','ignore'))
+            soup = BeautifulSoup(req_page)
             self.get_title(soup)
         if len(self.getConfig('pushoverapi')) > 2:
             notifyPushover(self.getConfig("pushoverapi"),self.items_to_queue,"QUEUE") if len(self.items_to_queue) > 0 else True
@@ -105,7 +98,6 @@ class HDAreaOrg(Hook):
                 title = replaceUmlauts(title)
                 season = re.compile('.*S\d|\Sd{2}|eason\d|eason\d{2}.*')
                 if (self.getConfig("quality") in title) and not any (word.lower() in title.lower() for word in self.getConfig("rejectList").split(";")) and not season.match(title):
-                    print title
                     fetched = self.getStorage(title)
                     if fetched == 'fetched':
                         self.core.log.debug("HDaFetcher:\t"+title+ " already fetched")
@@ -130,7 +122,7 @@ class HDAreaOrg(Hook):
         imdb_url = re.sub(r'.*(imdb.*)"\starget.*', r'http://\1', imdb_url)
         if "http" in imdb_url:
             page = urllib2.urlopen(imdb_url).read()
-            imdb_site = BeautifulSoup(page.decode('utf-8', 'ignore'))
+            imdb_site = BeautifulSoup(page)
             year_pattern = re.compile(r'[0-9]{4}')
             year = imdb_site.find("span", {"class" : "nobr"})
             year = unicode.join(u'',map(unicode,year))
@@ -143,11 +135,11 @@ class HDAreaOrg(Hook):
                 self.core.log.debug("HDaFetcher:\t"+title+" ("+year+"): zu ALT")
     def get_genre(self, soup1, title, dlLink, year, imdb_url):
         page = urllib2.urlopen(imdb_url).read()
-        imdb_site = BeautifulSoup(page.decode('utf-8', 'ignore'))
+        imdb_site = BeautifulSoup(page)
         genres = []
         get_genre = imdb_site.findAll("span", {"itemprop" : "genre"})
         for genre in get_genre:
-            genre = genre.getText()
+            genre = genre.getText().encode("utf-8")
             genres.append(genre)
         if not any (word in genres for word in self.getConfig("rej_genre").split(";")):
             self.get_rating(soup1, title, dlLink , year, imdb_url)
@@ -166,14 +158,14 @@ class HDAreaOrg(Hook):
                 if rating < self.getConfig("conf_rating_collector"):
                     self.core.log.debug("HDaFetcher:\t"+title+" ("+year+") IMDb: "+rating+": zu SCHLECHT")
                 if (storage == 'downloaded') and not (rating < self.getConfig("conf_rating_collector")):
-                    self.core.log.debug("HDaFetcher:\t"+replaceUmlauts(title)+" ("+year+")" + " already downloaded")
+                    self.core.log.debug("HDaFetcher:\t"+title+" ("+year+")" + " already downloaded")
                 else:
                     self.setStorage(title, 'downloaded')
                     if (rating < self.getConfig("conf_rating_queue")) and (rating > self.getConfig("conf_rating_collector")):
-                        self.core.log.info("HDaFetcher:\tCOLLECTOR: "+title+" ("+year+") IMDb: "+rating)
-                        self.core.api.addPackage(title+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
-                        self.items_to_collector.append(title+" ("+year+") IMDb: "+rating) 
+                        self.core.log.info("HDaFetcher:\tCOLLECTOR: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
+                        self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
+                        self.items_to_collector.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating) 
                     elif rating > self.getConfig("conf_rating_queue"):
-                        self.core.log.info("HDaFetcher:\tQUEUE: "+title+" ("+year+") IMDb: "+rating)
-                        self.core.api.addPackage(title+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
-                        self.items_to_queue.append(title+" ("+year+") IMDb: "+rating)
+                        self.core.log.info("HDaFetcher:\tQUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
+                        self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
+                        self.items_to_queue.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating)
