@@ -1,7 +1,9 @@
 from module.plugins.internal.Hook import Hook 
-import feedparser, re, urllib2, urllib, httplib, base64, json
+import feedparser, re, urllib2, urllib, httplib, base64, json, contextlib
 from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
+from urllib import urlencode
+from urllib2 import urlopen
 
 def replaceUmlauts(title):
     title = title.replace(unichr(228), "ae").replace(unichr(196), "Ae")
@@ -51,9 +53,15 @@ def notifyPushbullet(api='', msg='',location=''):
     else:
         print 'Pushbullet Fail'
 
+def make_tiny(url):
+        request_url = ('http://tinyurl.com/api-create.php?' +
+        urlencode({'url':url}))
+        with contextlib.closing(urlopen(request_url)) as response:
+                return response.read().decode('utf-8')
+
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
-    __version__ = "1.8"
+    __version__ = "1.9"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
@@ -155,6 +163,7 @@ class HDAreaOrg(Hook):
                 rating = "".join(rating.split('\n'))
                 title = replaceUmlauts(title)
                 storage = self.getStorage(title)
+                imdb_url = imdb_url.strip()
                 if rating < self.getConfig("conf_rating_collector"):
                     self.core.log.debug("HDaFetcher:\t"+title+" ("+year+") IMDb: "+rating+": zu SCHLECHT")
                 if (storage == 'downloaded') and not (rating < self.getConfig("conf_rating_collector")):
@@ -164,8 +173,8 @@ class HDAreaOrg(Hook):
                     if (rating < self.getConfig("conf_rating_queue")) and (rating > self.getConfig("conf_rating_collector")):
                         self.core.log.info("HDaFetcher:\tCOLLECTOR: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
-                        self.items_to_collector.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating) 
+                        self.items_to_collector.append(title.encode("utf-8")+" ("+year+")\nIMDb: "+rating+"  ||  Info: "+make_tiny(imdb_url)) 
                     elif rating > self.getConfig("conf_rating_queue"):
                         self.core.log.info("HDaFetcher:\tQUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
-                        self.items_to_queue.append(title.encode("utf-8")+" ("+year+") IMDb: "+rating)
+                        self.items_to_queue.append(title.encode("utf-8")+" ("+year+")\nIMDb: "+rating+"  ||  Info: "+make_tiny(imdb_url))
