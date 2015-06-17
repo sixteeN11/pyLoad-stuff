@@ -64,7 +64,7 @@ def notifyPushbullet(api='', msg=''):
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.53"
+    __version__ = "1.54"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
@@ -79,6 +79,8 @@ class SJ(Hook):
                   ("pushbulletapi","str","Your Pushbullet-API key","")]
     __author_name__ = ("gutz-pilz","zapp-brannigan")
     __author_mail__ = ("unwichtig@gmail.com","")
+    
+    SUBSTITUTE = "[&#\s/()]"
     
     def coreReady(self):
         self.core.api.setConfigValue("SerienjunkiesOrg", "changeNameSJ", "Packagename", section='plugin')
@@ -179,6 +181,7 @@ class SJ(Hook):
 
 
     def parse_download(self,series_url, search_title):
+        search_title = re.sub(self.SUBSTITUTE,".",search_title)
         req_page = getURL(series_url)
         soup = BeautifulSoup(req_page)
         title = soup.find(text=re.compile(search_title))
@@ -191,6 +194,8 @@ class SJ(Hook):
                 if re.match(pattern, url):
                     items.append(url)
             self.send_package(title,items) if len(items) > 0 else True
+        else:
+            self.core.log.error("SJFetcher - Ooops, das haette nicht passieren duerfen!")
                  
     def send_package(self, title, link):
         storage = self.getStorage(title)
