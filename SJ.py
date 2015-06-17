@@ -195,7 +195,7 @@ class SJ(Hook):
                     items.append(url)
             self.send_package(title,items) if len(items) > 0 else True
         else:
-            self.core.log.error("Ooops, das haette nicht passieren duerfen!")
+            self.core.log.error("SJFetcher - Ooops, das haette nicht passieren duerfen!")
                  
     def send_package(self, title, link):
         storage = self.getStorage(title)
