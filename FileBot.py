@@ -23,7 +23,7 @@ from module.utils import save_join
 
 class FileBot(Hook):
     __name__ = "FileBot"
-    __version__ = "0.7"
+    __version__ = "0.8"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
@@ -80,13 +80,15 @@ class FileBot(Hook):
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
     __author_mail__ = ("branko.wilhelm@gmail.com", "screver@gmail.com", "unwichtig@gmail.com")
 
-    event_list = ["package_extracted", "packageFinished"]
-   
+    def setup(self):
+        self.event_list = ["package_extracted", "packageFinished"]
+
     ##NOTE: change @pyLoad4.10 - remove "delete_extracted" and directly get ExtractArchive setting value
     ##ExtractArchive settings are not persistant at 4.9
+
     def coreReady(self):
         self.core.api.setConfigValue("general", "folder_per_package", "True", section='core')
-        #self.core.api.setConfigValue("FileBot", "exec", 'cd / && ./filebot.sh "{file}"', section='plugin')
+        self.core.api.setConfigValue("FileBot", "exec", 'cd / && ./filebot.sh "{file}"', section='plugin')
         if self.getConfig('delete_extracted') is True:
             self.core.api.setConfigValue("ExtractArchive", "delete", "True", section='plugin')
             self.core.api.setConfigValue("ExtractArchive", "deltotrash", "False", section='plugin')
@@ -112,8 +114,6 @@ class FileBot(Hook):
         else:
             self.Finished(folder)
             
-
-
     def package_extracted(self, pypack):
         x = False
 
@@ -247,17 +247,23 @@ class FileBot(Hook):
                 for line in proc.stdout:
                     self.logInfo(line.decode('utf-8').rstrip('\r|\n'))
                 proc.wait()
+                try:
+                    if self.getConfig('cleanfolder') is True:
+                        self.logInfo('cleaning')
+                        proc=subprocess.Popen(['filebot -script fn:cleaner --def root=y ', folder], stdout=subprocess.PIPE)
+                        for line in proc.stdout:
+                            self.logInfo(line.decode('utf-8').rstrip('\r|\n'))
+                        proc.wait()
+                except:
+                    self.logInfo('kein Ordner zum cleanen vorhanden')
             else:
                 self.logInfo('executed')
                 subprocess.Popen(args, bufsize=-1)
-            if (self.getConfig('cleanfolder') is True) and (self.getConfig('output_to_log') is True):
-                self.logInfo('cleaning')
-                proc=subprocess.Popen(['filebot -script fn:cleaner --def root=y ', folder], stdout=subprocess.PIPE)
-                for line in proc.stdout:
-                    self.logInfo(line.decode('utf-8').rstrip('\r|\n'))
-                proc.wait()
-            if (self.getConfig('cleanfolder') is True) and (self.getConfig('output_to_log') is False):
-                self.logInfo('cleaning')
-                subprocess.Popen(['filebot -script fn:cleaner --def root=y ', folder], bufsize=-1)
+                try:
+                    if self.getConfig('cleanfolder') is True:
+                        self.logInfo('cleaning')
+                        subprocess.Popen(['filebot -script fn:cleaner --def root=y ', folder], bufsize=-1)
+                except:
+                    self.logInfo('kein Ordner zum cleanen vorhanden')
         except Exception, e:
             self.logError(str(e))
