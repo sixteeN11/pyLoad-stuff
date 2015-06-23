@@ -1,9 +1,7 @@
 from module.plugins.internal.Hook import Hook 
-import feedparser, re, urllib2, urllib, httplib, base64, json, contextlib
+import feedparser, re, urllib2, urllib, httplib, base64, json
 from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
-from urllib import urlencode
-from urllib2 import urlopen
 
 def replaceUmlauts(title):
     title = title.replace(unichr(228), "ae").replace(unichr(196), "Ae")
@@ -54,10 +52,16 @@ def notifyPushbullet(api='', msg='',location=''):
         print 'Pushbullet Fail'
 
 def make_tiny(url):
-        request_url = ('http://tinyurl.com/api-create.php?' +
-        urlencode({'url':url}))
-        with contextlib.closing(urlopen(request_url)) as response:
-                return response.read().decode('utf-8')
+    connection = httplib.HTTPSConnection('api.shorte.st', 443)
+    connection.connect()
+    connection.request('PUT', '/v1/data/url', json.dumps({
+           "urlToShorten": url,
+         }), {
+           "public-api-token": "049cd75ad7a6cc026ef7364fa38c8792",
+           "Content-Type": "application/json"
+         })
+    results = json.loads(connection.getresponse().read())
+    return results.get("shortenedUrl", "none").decode('utf-8')
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
