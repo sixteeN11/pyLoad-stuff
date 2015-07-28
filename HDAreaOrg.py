@@ -1,4 +1,4 @@
-from module.plugins.internal.Hook import Hook 
+from module.plugins.internal.Hook import Hook
 import feedparser, re, urllib2, urllib, httplib, base64, json
 from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
@@ -65,7 +65,7 @@ def make_tiny(url):
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
-    __version__ = "1.91"
+    __version__ = "1.9"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
@@ -83,7 +83,7 @@ class HDAreaOrg(Hook):
     __author_mail__ = ("unwichtig@gmail.com")
 
     def setup(self):
-        self.interval = self.getConfig("interval") * 60
+        self.interval = self.get_config("interval") * 60
     def periodical(self):
         self.items_to_queue = []
         self.items_to_collector = []
@@ -92,30 +92,30 @@ class HDAreaOrg(Hook):
             req_page = getURL(address)
             soup = BeautifulSoup(req_page)
             self.get_title(soup)
-        if self.getConfig("cinedubs") == True:
+        if self.get_config("cinedubs") == True:
             address = ('http://hd-area.org/index.php?s=Cinedubs')
             req_page = getURL(address)
             soup = BeautifulSoup(req_page)
             self.get_title(soup)
-        if len(self.getConfig('pushoverapi')) > 2:
-            notifyPushover(self.getConfig("pushoverapi"),self.items_to_queue,"QUEUE") if len(self.items_to_queue) > 0 else True
-            notifyPushover(self.getConfig("pushoverapi"),self.items_to_collector,"COLLECTOR") if len(self.items_to_collector) > 0 else True
-        if len(self.getConfig('pushbulletapi')) > 2:
-            notifyPushbullet(self.getConfig("pushbulletapi"),self.items_to_queue,"QUEUE") if len(self.items_to_queue) > 0 else True
-            notifyPushbullet(self.getConfig("pushbulletapi"),self.items_to_collector,"COLLECTOR") if len(self.items_to_collector) > 0 else True  
+        if len(self.get_config('pushoverapi')) > 2:
+            notifyPushover(self.get_config("pushoverapi"),self.items_to_queue,"QUEUE") if len(self.items_to_queue) > 0 else True
+            notifyPushover(self.get_config("pushoverapi"),self.items_to_collector,"COLLECTOR") if len(self.items_to_collector) > 0 else True
+        if len(self.get_config('pushbulletapi')) > 2:
+            notifyPushbullet(self.get_config("pushbulletapi"),self.items_to_queue,"QUEUE") if len(self.items_to_queue) > 0 else True
+            notifyPushbullet(self.get_config("pushbulletapi"),self.items_to_collector,"COLLECTOR") if len(self.items_to_collector) > 0 else True  
     def get_title(self,soup1):
         for all in soup1.findAll("div", {"class" : "topbox"}):
             for title in all.findAll("div", {"class" : "title"}):
                 title = title.getText()
                 title = replaceUmlauts(title)
                 season = re.compile('.*S\d|\Sd{2}|eason\d|eason\d{2}.*')
-                if (self.getConfig("quality") in title) and not any (word.lower() in title.lower() for word in self.getConfig("rejectList").split(";")) and not season.match(title):
-                    fetched = self.getStorage(title)
+                if (self.get_config("quality") in title) and not any (word.lower() in title.lower() for word in self.get_config("rejectList").split(";")) and not season.match(title):
+                    fetched = self.retrieve(title)
                     if fetched == 'fetched':
-                        self.core.log.debug("HDaFetcher:\t"+title+ " already fetched")
+                        self.log_debug(title+ " already fetched")
                     else:
                         self.get_download(all, title)
-                        self.setStorage(title, 'fetched')
+                        self.store(title, 'fetched')
     def get_download(self, soup1, title):
         for title in soup1.findAll("div", {"class" : "title"}):
             hda_url = title.a["href"].replace("https","http")
@@ -124,7 +124,7 @@ class HDAreaOrg(Hook):
             links = soup_.findAll("span", {"style":"display:inline;"})
             for link in links:
                 url = link.a["href"]
-                for pref_hoster in self.getConfig("hoster"):
+                for pref_hoster in self.get_config("hoster"):
                     if pref_hoster.lower() in link.text.lower():
                         self.get_year(soup1, title, url)
                     break
@@ -141,10 +141,10 @@ class HDAreaOrg(Hook):
             year = re.sub(r".*([0-9]{4}).*", r"\1", year)
             orig_title = imdb_site.find("span", {"class" : "itemprop"}).getText()
             title = replaceUmlauts(orig_title)
-            if year > self.getConfig("conf_year"):
+            if year > self.get_config("conf_year"):
                 self.get_genre(soup1, title, dlLink , year, imdb_url)
             else:
-                self.core.log.debug("HDaFetcher:\t"+title+" ("+year+"): zu ALT")
+                self.log_debug(title+" ("+year+"): zu ALT")
     def get_genre(self, soup1, title, dlLink, year, imdb_url):
         page = urllib2.urlopen(imdb_url).read()
         imdb_site = BeautifulSoup(page)
@@ -153,10 +153,10 @@ class HDAreaOrg(Hook):
         for genre in get_genre:
             genre = genre.getText().encode("utf-8")
             genres.append(genre)
-        if not any (word in genres for word in self.getConfig("rej_genre").split(";")):
+        if not any (word in genres for word in self.get_config("rej_genre").split(";")):
             self.get_rating(soup1, title, dlLink , year, imdb_url)
         else:
-            self.core.log.debug("HDaFetcher:\t" + title + " ("+year+"): GENRE passt nicht")
+            self.log_debug("" + title + " ("+year+"): GENRE passt nicht")
     def get_rating(self, soup1, title, dlLink, year, imdb_url):
         for rating in soup1.findAll("div", {"class" : "boxrechts"}):
             if 'IMDb' in rating.getText():
@@ -166,19 +166,19 @@ class HDAreaOrg(Hook):
                 rating = re.sub(r'(.*\s-/10)',r'0.1', rating)
                 rating = "".join(rating.split('\n'))
                 title = replaceUmlauts(title)
-                storage = self.getStorage(title)
+                storage = self.retrieve(title)
                 imdb_url = imdb_url.strip()
-                if rating < self.getConfig("conf_rating_collector"):
-                    self.core.log.debug("HDaFetcher:\t"+title+" ("+year+") IMDb: "+rating+": zu SCHLECHT")
-                if (storage == 'downloaded') and not (rating < self.getConfig("conf_rating_collector")):
-                    self.core.log.debug("HDaFetcher:\t"+title+" ("+year+")" + " already downloaded")
+                if rating < self.get_config("conf_rating_collector"):
+                    self.log_debug(title+" ("+year+") IMDb: "+rating+": zu SCHLECHT")
+                if (storage == 'downloaded') and not (rating < self.get_config("conf_rating_collector")):
+                    self.log_debug(title+" ("+year+")" + " already downloaded")
                 else:
-                    self.setStorage(title, 'downloaded')
-                    if (rating < self.getConfig("conf_rating_queue")) and (rating > self.getConfig("conf_rating_collector")):
-                        self.core.log.info("HDaFetcher:\tCOLLECTOR: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
-                        self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
+                    self.store(title, 'downloaded')
+                    if (rating < self.get_config("conf_rating_queue")) and (rating > self.get_config("conf_rating_collector")):
+                        self.log_info("COLLECTOR: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
+                        self.pyload.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
                         self.items_to_collector.append(title.encode("utf-8")+" ("+year+")\nIMDb: "+rating+"  ||  Info: "+make_tiny(imdb_url)) 
-                    elif rating > self.getConfig("conf_rating_queue"):
-                        self.core.log.info("HDaFetcher:\tQUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
-                        self.core.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
+                    elif rating > self.get_config("conf_rating_queue"):
+                        self.log_info("QUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
+                        self.pyload.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
                         self.items_to_queue.append(title.encode("utf-8")+" ("+year+")\nIMDb: "+rating+"  ||  Info: "+make_tiny(imdb_url))
