@@ -23,7 +23,7 @@ from module.utils import save_join
 
 class FileBot(Hook):
     __name__ = "FileBot"
-    __version__ = "0.8"
+    __version__ = "0.9"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
@@ -87,29 +87,29 @@ class FileBot(Hook):
     ##ExtractArchive settings are not persistant at 4.9
 
     def coreReady(self):
-        self.core.api.setConfigValue("general", "folder_per_package", "True", section='core')
-        self.core.api.setConfigValue("FileBot", "exec", 'cd / && ./filebot.sh "{file}"', section='plugin')
-        if self.getConfig('delete_extracted') is True:
-            self.core.api.setConfigValue("ExtractArchive", "delete", "True", section='plugin')
-            self.core.api.setConfigValue("ExtractArchive", "deltotrash", "False", section='plugin')
+        self.pyload.config.set("general", "folder_per_package", "True")
+        self.pyload.config.setPlugin("FileBot", "exec", 'cd / && ./filebot.sh "{file}"')
+        if self.get_config('delete_extracted') is True:
+            self.pyload.config.setPlugin("ExtractArchive", "delete", "True")
+            self.pyload.config.setPlugin("ExtractArchive", "deltotrash", "False")
         else:
-            self.core.api.setConfigValue("ExtractArchive", "delete", "False", section='plugin')
+            self.pyload.config.setPlugin("ExtractArchive", "delete", "False", section='plugin')
 
     def packageFinished(self, pypack):
         download_folder = self.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
-        if self.getConfig('delete_extracted') is True:
+        if self.get_config('delete_extracted') is True:
             x = False
-            self.core.log.debug("FileBot: MKV-Checkup (packageFinished)")
+            self.log_debug("FileBot: MKV-Checkup (packageFinished)")
             for root, dirs, files in os.walk(folder):
                 for name in files:
                     if name.endswith((".rar", ".r0", ".r12")):
-                        self.core.log.debug("FileBot: Hier sind noch Archive")
+                        self.log_debug("FileBot: Hier sind noch Archive")
                         x = True
                     break
                 break
             if x == False:
-                self.core.log.debug("FileBot: Hier sind keine Archive")
+                self.log_debug("FileBot: Hier sind keine Archive")
                 self.Finished(folder)
         else:
             self.Finished(folder)
@@ -118,8 +118,8 @@ class FileBot(Hook):
         x = False
 
         download_folder = self.config['general']['download_folder']
-        extract_destination = self.core.api.getConfigValue("ExtractArchive", "destination", section='plugin')
-        extract_subfolder = self.core.api.getConfigValue("ExtractArchive", "subfolder", section='plugin')
+        extract_destination = self.pyload.config.getPlugin("ExtractArchive", "destination")
+        extract_subfolder = self.pyload.config.getPlugin("ExtractArchive", "subfolder")
         
         # determine output folder
         folder = save_join(download_folder, pypack.folder, extract_destination, "")  #: force trailing slash
@@ -127,17 +127,17 @@ class FileBot(Hook):
         if extract_subfolder is True:
             folder = save_join(folder, pypack.folder)
         
-        if self.getConfig('delete_extracted') is True:
-            self.core.log.debug("FileBot: MKV-Checkup (package_extracted)")
+        if self.get_config('delete_extracted') is True:
+            self.log_debug("FileBot: MKV-Checkup (package_extracted)")
             for root, dirs, files in os.walk(folder):
                 for name in files:
                     if name.endswith((".rar", ".r0", ".r12")):
-                        self.core.log.debug("FileBot: Hier sind noch Archive")
+                        self.log_debug("FileBot: Hier sind noch Archive")
                         x = True
                     break
                 break
             if x == False:
-                self.core.log.debug("FileBot: Hier sind keine Archive")
+                self.log_debug("FileBot: Hier sind keine Archive")
                 self.Finished(folder)
         else:
             self.Finished(folder)
@@ -146,8 +146,8 @@ class FileBot(Hook):
     def Finished(self, folder):
         args = []
 
-        if self.getConfig('filebot'):
-            args.append(self.getConfig('filebot'))
+        if self.get_config('filebot'):
+            args.append(self.get_config('filebot'))
         else:
             args.append('filebot')
 
@@ -162,93 +162,93 @@ class FileBot(Hook):
         args.append('-r')
 
         args.append('--conflict')
-        args.append(self.getConfig('conflict'))
+        args.append(self.get_config('conflict'))
 
         args.append('--action')
-        args.append(self.getConfig('action'))
+        args.append(self.get_config('action'))
 
-        if self.getConfig('destination'):
+        if self.get_config('destination'):
             args.append('--output')
-            args.append(self.getConfig('destination'))
+            args.append(self.get_config('destination'))
         else:
             args.append('--output')
             args.append(folder)
 
-        if self.getConfig('lang'):
+        if self.get_config('lang'):
             args.append('--lang')
-            args.append(self.getConfig('lang'))
+            args.append(self.get_config('lang'))
 
         # start with all definitions:
         args.append('--def')
 
-        if self.getConfig('exec'):
-            args.append('exec=' + self.getConfig('exec'))
+        if self.get_config('exec'):
+            args.append('exec=' + self.get_config('exec'))
 
-        if self.getConfig('clean'):
-            args.append('clean=' + self.getConfig('clean'))
+        if self.get_config('clean'):
+            args.append('clean=' + self.get_config('clean'))
 
         args.append('skipExtract=y')
 
-        if self.getConfig('excludeList'):
-            args.append('excludeList=' + self.getConfig('excludeList'))
+        if self.get_config('excludeList'):
+            args.append('excludeList=' + self.get_config('excludeList'))
 
-        if self.getConfig('reperror'):
-            args.append('reportError=' + self.getConfig('reperror'))
+        if self.get_config('reperror'):
+            args.append('reportError=' + self.get_config('reperror'))
         
-        if self.getConfig('storeReport'):
-            args.append('storeReport=' + self.getConfig('storeReport'))
+        if self.get_config('storeReport'):
+            args.append('storeReport=' + self.get_config('storeReport'))
 
-        if self.getConfig('artwork'):
-            args.append('artwork=' + self.getConfig('artwork'))
+        if self.get_config('artwork'):
+            args.append('artwork=' + self.get_config('artwork'))
 
-        if self.getConfig('subtitles'):
-            args.append('subtitles=' + self.getConfig('subtitles'))
+        if self.get_config('subtitles'):
+            args.append('subtitles=' + self.get_config('subtitles'))
 
-        if self.getConfig('ignore'):
-            args.append('ignore=' + self.getConfig('ignore'))
+        if self.get_config('ignore'):
+            args.append('ignore=' + self.get_config('ignore'))
 
-        if self.getConfig('movie'):
-            args.append('movieFormat=' + self.getConfig('movie'))
+        if self.get_config('movie'):
+            args.append('movieFormat=' + self.get_config('movie'))
 
-        if self.getConfig('series'):
-            args.append('seriesFormat=' + self.getConfig('series'))
+        if self.get_config('series'):
+            args.append('seriesFormat=' + self.get_config('series'))
 
-        if self.getConfig('no-xattr') is True:
+        if self.get_config('no-xattr') is True:
             args.append(" -no-xattr")
 
-        if self.getConfig('xbmc'):
-            args.append('xbmc=' + self.getConfig('xbmc'))
+        if self.get_config('xbmc'):
+            args.append('xbmc=' + self.get_config('xbmc'))
             
-        if self.getConfig('pushover'):
-            args.append('pushover=' + self.getConfig('pushover'))
+        if self.get_config('pushover'):
+            args.append('pushover=' + self.get_config('pushover'))
 
-        if self.getConfig('pushbullet'):
-            args.append('pushbullet=' + self.getConfig('pushbullet'))
+        if self.get_config('pushbullet'):
+            args.append('pushbullet=' + self.get_config('pushbullet'))
 
-        if self.getConfig('plex'):
-            if self.getConfig('plextoken'):
-                plexToken = ":" + self.getConfig('plextoken')
+        if self.get_config('plex'):
+            if self.get_config('plextoken'):
+                plexToken = ":" + self.get_config('plextoken')
             else:
                 plexToken = ""
 
-            args.append('plex=' + self.getConfig('plex') + plexToken)
-            self.logInfo('plex refreshed at ' + self.getConfig('plex') + plexToken)
+            args.append('plex=' + self.get_config('plex') + plexToken)
+            self.logInfo('plex refreshed at ' + self.get_config('plex') + plexToken)
 
 
-        if self.getConfig('extras'):
-            args.append('extras='+ self.getConfig('extras'))
+        if self.get_config('extras'):
+            args.append('extras='+ self.get_config('extras'))
 
         args.append(folder)
 
         try:
-            if self.getConfig('output_to_log') is True:
+            if self.get_config('output_to_log') is True:
                 self.logInfo('executed')
                 proc=subprocess.Popen(args, stdout=subprocess.PIPE)
                 for line in proc.stdout:
                     self.logInfo(line.decode('utf-8').rstrip('\r|\n'))
                 proc.wait()
                 try:
-                    if self.getConfig('cleanfolder') is True:
+                    if self.get_config('cleanfolder') is True:
                         self.logInfo('cleaning')
                         proc=subprocess.Popen(['filebot -script fn:cleaner --def root=y ', folder], stdout=subprocess.PIPE)
                         for line in proc.stdout:
@@ -260,7 +260,7 @@ class FileBot(Hook):
                 self.logInfo('executed')
                 subprocess.Popen(args, bufsize=-1)
                 try:
-                    if self.getConfig('cleanfolder') is True:
+                    if self.get_config('cleanfolder') is True:
                         self.logInfo('cleaning')
                         subprocess.Popen(['filebot -script fn:cleaner --def root=y ', folder], bufsize=-1)
                 except:
