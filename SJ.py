@@ -22,6 +22,30 @@ def getSeriesList(file):
         self.core.log.error("Abbruch, Suchdatei wurde nicht gefunden!")
     except Exception, e:
         self.core.log.error("Unbekannter Fehler: %s" %e)
+
+def send_mail(text):
+    """Tested with googlemail.com and bitmessage.ch. It should work with all mailservices which provide SSL access.""" 
+    serveraddr = ''
+    serverport = '465'
+    username = ''
+    password = ''
+    fromaddr = ''
+    toaddrs  = ''
+    
+    if toaddrs == "":
+        return
+
+    subject = "pyLoad: Package added!"
+    msg = "\n".join(text)
+
+    header = "To: %s\nFrom:%s\nSubject:%s\n" %(toaddrs,fromaddr,subject)
+    msg = header + "\n" + msg
+
+    server = smtplib.SMTP_SSL(serveraddr,serverport)
+    server.ehlo()
+    server.login(username,password)
+    server.sendmail(fromaddr, toaddrs, msg)
+    server.quit()
     
 def notifyPushover(api ='', msg=''):
     data = urllib.urlencode({
@@ -145,7 +169,8 @@ class SJ(Hook):
         if len(self.get_config('pushbulletapi')) > 2:
             notifyPushbullet(self.get_config("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True
         if len(self.get_config('pushoverapi')) > 2:
-            notifyPushover(self.get_config("pushoverapi"),self.added_items) if len(self.added_items) > 0 else True  
+            notifyPushover(self.get_config("pushoverapi"),self.added_items) if len(self.added_items) > 0 else True
+        send_mail(self.added_items) if len(self.added_items) > 0 else True 
                     
     def range_checkr(self, link, title):
         pattern = re.match(".*S\d{2}E\d{2}-\w?\d{2}.*", title)
