@@ -23,7 +23,7 @@ from module.utils import save_join
 
 class FileBot(Hook):
     __name__ = "FileBot"
-    __version__ = "0.9"
+    __version__ = "0.8"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
@@ -96,7 +96,7 @@ class FileBot(Hook):
             self.pyload.config.setPlugin("ExtractArchive", "delete", "False", section='plugin')
 
     def packageFinished(self, pypack):
-        download_folder = self.config['general']['download_folder']
+        download_folder = self.pyload.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
         if self.get_config('delete_extracted') is True:
             x = False
@@ -117,7 +117,7 @@ class FileBot(Hook):
     def package_extracted(self, pypack):
         x = False
 
-        download_folder = self.config['general']['download_folder']
+        download_folder = self.pyload.config['general']['download_folder']
         extract_destination = self.pyload.config.getPlugin("ExtractArchive", "destination")
         extract_subfolder = self.pyload.config.getPlugin("ExtractArchive", "subfolder")
         
