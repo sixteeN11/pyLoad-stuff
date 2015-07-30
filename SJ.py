@@ -88,7 +88,7 @@ def notifyPushbullet(api='', msg=''):
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.55"
+    __version__ = "2.0"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
@@ -103,13 +103,11 @@ class SJ(Hook):
                   ("pushbulletapi","str","Your Pushbullet-API key","")]
     __author_name__ = ("gutz-pilz","zapp-brannigan")
     __author_mail__ = ("unwichtig@gmail.com","")
-    
-    def coreReady(self):
+
+    def activate(self):
         self.pyload.config.setPlugin("SerienjunkiesOrg", "changeNameSJ", "Packagename")
         self.pyload.config.setPlugin("SerienjunkiesOrg", "changeNameDJ", "Packagename")
-
-    def setup(self):
-        self.interval = self.get_config("interval") * 60
+        self.interval = self.get_config('interval') * 60
 
     def periodical(self):
         feed = feedparser.parse('http://serienjunkies.org/xml/feeds/episoden.xml')
