@@ -82,10 +82,15 @@ class HDAreaOrg(Hook):
     __author_name__ = ("gutz-pilz")
     __author_mail__ = ("unwichtig@gmail.com")
 
+    MIN_CHECK_INTERVAL = 2 * 60 #2minutes
+
+    def init(self):
+        self.interval = self.MIN_CHECK_INTERVAL
+        
     def activate(self):
         self.pyload.config.setPlugin("SerienjunkiesOrg", "changeNameSJ", "Packagename")
         self.pyload.config.setPlugin("SerienjunkiesOrg", "changeNameDJ", "Packagename")
-        self.interval = self.get_config('interval') * 60
+        self.interval = max(self.MIN_CHECK_INTERVAL, self.get_config('interval') * 60)
 
     def periodical(self):
         self.items_to_queue = []
