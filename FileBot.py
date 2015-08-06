@@ -80,12 +80,9 @@ class FileBot(Hook):
     __author_name__ = ("Branko Wilhelm", "Kotaro", "Gutz-Pilz")
     __author_mail__ = ("branko.wilhelm@gmail.com", "screver@gmail.com", "unwichtig@gmail.com")
 
-    def setup(self):
-#        self.event_list = ["package_extracted", "packageFinished"]
+    def init(self):
         self.event_map  = {'package_extracted': "package_extracted",
-                           'archive_extracted': "package_finished" }
-    ##NOTE: change @pyLoad4.10 - remove "delete_extracted" and directly get ExtractArchive setting value
-    ##ExtractArchive settings are not persistant at 4.9
+                           'package_finished': "package_finished" }
 
     def coreReady(self):
         self.pyload.config.set("general", "folder_per_package", "True")
