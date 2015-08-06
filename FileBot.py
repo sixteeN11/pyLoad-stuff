@@ -23,7 +23,7 @@ from module.utils import save_join
 
 class FileBot(Hook):
     __name__ = "FileBot"
-    __version__ = "0.8"
+    __version__ = "1.0"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
@@ -81,8 +81,9 @@ class FileBot(Hook):
     __author_mail__ = ("branko.wilhelm@gmail.com", "screver@gmail.com", "unwichtig@gmail.com")
 
     def setup(self):
-        self.event_list = ["package_extracted", "packageFinished"]
-
+#        self.event_list = ["package_extracted", "packageFinished"]
+        self.event_map  = {'package_extracted': "package_extracted",
+                           'archive_extracted': "package_finished" }
     ##NOTE: change @pyLoad4.10 - remove "delete_extracted" and directly get ExtractArchive setting value
     ##ExtractArchive settings are not persistant at 4.9
 
@@ -95,21 +96,21 @@ class FileBot(Hook):
         else:
             self.pyload.config.setPlugin("ExtractArchive", "delete", "False", section='plugin')
 
-    def packageFinished(self, pypack):
+    def package_finished(self, pypack):
         download_folder = self.pyload.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
         if self.get_config('delete_extracted') is True:
             x = False
-            self.log_debug("FileBot: MKV-Checkup (packageFinished)")
+            self.log_debug("MKV-Checkup (packageFinished)")
             for root, dirs, files in os.walk(folder):
                 for name in files:
                     if name.endswith((".rar", ".r0", ".r12")):
-                        self.log_debug("FileBot: Hier sind noch Archive")
+                        self.log_debug("Hier sind noch Archive")
                         x = True
                     break
                 break
             if x == False:
-                self.log_debug("FileBot: Hier sind keine Archive")
+                self.log_debug("Hier sind keine Archive")
                 self.Finished(folder)
         else:
             self.Finished(folder)
@@ -128,16 +129,16 @@ class FileBot(Hook):
             folder = save_join(folder, pypack.folder)
         
         if self.get_config('delete_extracted') is True:
-            self.log_debug("FileBot: MKV-Checkup (package_extracted)")
+            self.log_debug("MKV-Checkup (package_extracted)")
             for root, dirs, files in os.walk(folder):
                 for name in files:
                     if name.endswith((".rar", ".r0", ".r12")):
-                        self.log_debug("FileBot: Hier sind noch Archive")
+                        self.log_debug("Hier sind noch Archive")
                         x = True
                     break
                 break
             if x == False:
-                self.log_debug("FileBot: Hier sind keine Archive")
+                self.log_debug("Hier sind keine Archive")
                 self.Finished(folder)
         else:
             self.Finished(folder)
@@ -232,7 +233,7 @@ class FileBot(Hook):
                 plexToken = ""
 
             args.append('plex=' + self.get_config('plex') + plexToken)
-            self.logInfo('plex refreshed at ' + self.get_config('plex') + plexToken)
+            self.log_info('plex refreshed at ' + self.get_config('plex') + plexToken)
 
 
         if self.get_config('extras'):
@@ -242,17 +243,17 @@ class FileBot(Hook):
 
         try:
             if self.get_config('output_to_log') is True:
-                self.logInfo('executed')
+                self.log_info('executed')
                 proc=subprocess.Popen(args, stdout=subprocess.PIPE)
                 for line in proc.stdout:
-                    self.logInfo(line.decode('utf-8').rstrip('\r|\n'))
+                    self.log_info(line.decode('utf-8').rstrip('\r|\n'))
                 proc.wait()
                 try:
                     if self.get_config('cleanfolder') is True:
-                        self.logInfo('cleaning')
+                        self.log_info('cleaning')
                         proc=subprocess.Popen(['filebot -script fn:cleaner --def root=y ', folder], stdout=subprocess.PIPE)
                         for line in proc.stdout:
-                            self.logInfo(line.decode('utf-8').rstrip('\r|\n'))
+                            self.log_info(line.decode('utf-8').rstrip('\r|\n'))
                         proc.wait()
                 except:
                     self.logInfo('kein Ordner zum cleanen vorhanden')
@@ -261,9 +262,9 @@ class FileBot(Hook):
                 subprocess.Popen(args, bufsize=-1)
                 try:
                     if self.get_config('cleanfolder') is True:
-                        self.logInfo('cleaning')
+                        self.log_info('cleaning')
                         subprocess.Popen(['filebot -script fn:cleaner --def root=y ', folder], bufsize=-1)
                 except:
-                    self.logInfo('kein Ordner zum cleanen vorhanden')
+                    self.log_info('kein Ordner zum cleanen vorhanden')
         except Exception, e:
-            self.logError(str(e))
+            self.log_error(str(e))
