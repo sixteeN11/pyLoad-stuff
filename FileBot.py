@@ -264,8 +264,4 @@ class FileBot(Hook):
                 except:
                     self.log_info('kein Ordner zum cleanen vorhanden')
         except Exception, e:
-<<<<<<< HEAD
             self.log_error(str(e))
-=======
-            self.log_error(str(e))
->>>>>>> origin/master
