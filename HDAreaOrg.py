@@ -189,4 +189,8 @@ class HDAreaOrg(Hook):
                     elif rating > self.get_config("conf_rating_queue"):
                         self.log_info("QUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.pyload.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
+<<<<<<< HEAD
                         self.items_to_queue.append(title.encode("utf-8")+" ("+year+")\nIMDb: "+rating+"  ||  Info: "+make_tiny(imdb_url))
+=======
+                        self.items_to_queue.append(title.encode("utf-8")+" ("+year+")\nIMDb: "+rating+"  ||  Info: "+make_tiny(imdb_url))
+>>>>>>> origin/master

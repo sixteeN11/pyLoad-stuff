@@ -227,4 +227,8 @@ class SJ(Hook):
             self.log_info("NEW EPISODE: " + title)
             self.store(title, 'downloaded')
             self.pyload.api.addPackage(title.encode("utf-8"), link, 1 if self.get_config("queue") else 0)
+<<<<<<< HEAD
             self.added_items.append(title.encode("utf-8"))
+=======
+            self.added_items.append(title.encode("utf-8"))
+>>>>>>> origin/master
