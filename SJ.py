@@ -1,4 +1,4 @@
-from module.plugins.Hook import Hook 
+from module.plugins.internal.Hook import Hook
 import feedparser, re, urllib, urllib2, httplib, codecs, base64, json
 from module.network.RequestFactory import getURL 
 from BeautifulSoup import BeautifulSoup
@@ -17,11 +17,35 @@ def getSeriesList(file):
         f.close()
         return titles
     except UnicodeError:
-        self.core.log.error("SJFetcher - Abbruch, es befinden sich ungueltige Zeichen in der Suchdatei!")
+        self.core.log.error("Abbruch, es befinden sich ungueltige Zeichen in der Suchdatei!")
     except IOError:
-        self.core.log.error("SJFetcher - Abbruch, Suchdatei wurde nicht gefunden!")
+        self.core.log.error("Abbruch, Suchdatei wurde nicht gefunden!")
     except Exception, e:
-        self.core.log.error("SJFetcher - Unbekannter Fehler: %s" %e)
+        self.core.log.error("Unbekannter Fehler: %s" %e)
+
+def send_mail(text):
+    """Tested with googlemail.com and bitmessage.ch. It should work with all mailservices which provide SSL access.""" 
+    serveraddr = ''
+    serverport = '465'
+    username = ''
+    password = ''
+    fromaddr = ''
+    toaddrs  = ''
+    
+    if toaddrs == "":
+        return
+
+    subject = "pyLoad: Package added!"
+    msg = "\n".join(text)
+
+    header = "To: %s\nFrom:%s\nSubject:%s\n" %(toaddrs,fromaddr,subject)
+    msg = header + "\n" + msg
+
+    server = smtplib.SMTP_SSL(serveraddr,serverport)
+    server.ehlo()
+    server.login(username,password)
+    server.sendmail(fromaddr, toaddrs, msg)
+    server.quit()
     
 def notifyPushover(api ='', msg=''):
     data = urllib.urlencode({
@@ -64,7 +88,7 @@ def notifyPushbullet(api='', msg=''):
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "1.52"
+    __version__ = "2.0"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
@@ -79,21 +103,23 @@ class SJ(Hook):
                   ("pushbulletapi","str","Your Pushbullet-API key","")]
     __author_name__ = ("gutz-pilz","zapp-brannigan")
     __author_mail__ = ("unwichtig@gmail.com","")
-    
-    def coreReady(self):
-        self.core.api.setConfigValue("SerienjunkiesOrg", "changeNameSJ", "Packagename", section='plugin')
-        self.core.api.setConfigValue("SerienjunkiesOrg", "changeNameDJ", "Packagename", section='plugin')
 
-    def setup(self):
-        self.interval = self.getConfig("interval") * 60
+    MIN_CHECK_INTERVAL = 2 * 60 #2minutes
+
+    def init(self):
+        self.interval = self.MIN_CHECK_INTERVAL
+
+    def activate(self):
+        self.pyload.config.setPlugin("SerienjunkiesOrg", "changeNameSJ", "Packagename")
+        self.pyload.config.setPlugin("SerienjunkiesOrg", "changeNameDJ", "Packagename")
+        self.interval = max(self.MIN_CHECK_INTERVAL, self.get_config('interval') * 60)
 
     def periodical(self):
         feed = feedparser.parse('http://serienjunkies.org/xml/feeds/episoden.xml')
-        
-        self.pattern = "|".join(getSeriesList(self.getConfig("file"))).lower()
-        reject = self.getConfig("rejectlist").replace(";","|").lower() if len(self.getConfig("rejectlist")) > 0 else "^unmatchable$"
-        self.quality = self.getConfig("quality")
-        self.hoster = self.getConfig("hoster")
+        self.pattern = "|".join(getSeriesList(self.get_config("file"))).lower()
+        reject = self.get_config("rejectlist").replace(";","|").lower() if len(self.get_config("rejectlist")) > 0 else "^unmatchable$"
+        self.quality = self.get_config("quality")
+        self.hoster = self.get_config("hoster")
         if self.hoster == "alle":
             self.hoster = "."
         self.added_items = []
@@ -102,7 +128,7 @@ class SJ(Hook):
             link = post.link
             title = post.title
             
-            if self.getConfig("regex"):
+            if self.get_config("regex"):
                 m = re.search(self.pattern,title.lower())
                 if not m and not "720p" in title and not "1080p" in title:
                     m = re.search(self.pattern.replace("480p","."),title.lower())
@@ -112,21 +138,21 @@ class SJ(Hook):
                     if "1080p" in title.lower(): self.quality = "1080p"
                     m = re.search(reject,title.lower())
                     if m:
-                        self.core.log.debug("SJFetcher - Abgelehnt: " + title)
+                        self.log_debug("Abgelehnt: " + title)
                         continue
                     title = re.sub('\[.*\] ', '', post.title)
                     self.range_checkr(link,title)
                                 
             else:
-                if self.getConfig("quality") != '480p':
+                if self.get_config("quality") != '480p':
                     m = re.search(self.pattern,title.lower())
                     if m:
-                        if self.getConfig("language") in title:
+                        if self.get_config("language") in title:
                             mm = re.search(self.quality,title.lower())
                             if mm:
                                 mmm = re.search(reject,title.lower())
                                 if mmm:
-                                    self.core.log.debug("SJFetcher - Abgelehnt: " + title)
+                                    self.log_debug("Abgelehnt: " + title)
                                     continue
                                 title = re.sub('\[.*\] ', '', post.title)
                                 self.range_checkr(link,title)
@@ -134,19 +160,20 @@ class SJ(Hook):
                 else:
                     m = re.search(self.pattern,title.lower())
                     if m:
-                        if self.getConfig("language") in title:
+                        if self.get_config("language") in title:
                             if "720p" in title.lower() or "1080p" in title.lower():
                                 continue
                             mm = re.search(reject,title.lower())
                             if mm:
-                                self.core.log.debug("SJFetcher - Abgelehnt: " + title)
+                                self.log_debug("Abgelehnt: " + title)
                                 continue
                             title = re.sub('\[.*\] ', '', post.title)
 
-        if len(self.getConfig('pushbulletapi')) > 2:
-            notifyPushbullet(self.getConfig("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True
-        if len(self.getConfig('pushoverapi')) > 2:
-            notifyPushover(self.getConfig("pushoverapi"),self.added_items) if len(self.added_items) > 0 else True  
+        if len(self.get_config('pushbulletapi')) > 2:
+            notifyPushbullet(self.get_config("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True
+        if len(self.get_config('pushoverapi')) > 2:
+            notifyPushover(self.get_config("pushoverapi"),self.added_items) if len(self.added_items) > 0 else True
+        send_mail(self.added_items) if len(self.added_items) > 0 else True 
                     
     def range_checkr(self, link, title):
         pattern = re.match(".*S\d{2}E\d{2}-\w?\d{2}.*", title)
@@ -154,14 +181,14 @@ class SJ(Hook):
             range0 = re.sub(r".*S\d{2}E(\d{2}-\w?\d{2}).*",r"\1", title).replace("E","")
             number1 = re.sub(r"(\d{2})-\d{2}",r"\1", range0)
             number2 = re.sub(r"\d{2}-(\d{2})",r"\1", range0)
-            title_cut = re.sub(r"(.*S\d{2}E).*",r"\1",title)
+            title_cut = re.findall(r"(.*S\d{2}E)(\d{2}-\w?\d{2})(.*)",title)
             for count in range(int(number1),(int(number2)+1)):
                 NR = re.match("d\{2}", str(count))
                 if NR is not None:
-                    title1 = title_cut + str(count)
+                    title1 = title_cut[0][0] + str(count) + ".*" + title_cut[0][-1]
                     self.range_parse(link, title1)
                 else:
-                    title1 = title_cut +"0"+ str(count)
+                    title1 = title_cut[0][0] + "0" + str(count) + ".*" + title_cut[0][-1]
                     self.range_parse(link, title1)
         else:
             self.parse_download(link, title)
@@ -193,11 +220,11 @@ class SJ(Hook):
             self.send_package(title,items) if len(items) > 0 else True
                  
     def send_package(self, title, link):
-        storage = self.getStorage(title)
+        storage = self.retrieve(title)
         if storage == 'downloaded':
-            self.core.log.debug("SJFetcher - " + title + " already downloaded")
+            self.log_debug(title + " already downloaded")
         else:
-            self.core.log.info("SJFetcher - NEW EPISODE: " + title)
-            self.setStorage(title, 'downloaded')
-            self.core.api.addPackage(title.encode("utf-8"), link, 1 if self.getConfig("queue") else 0)
+            self.log_info("NEW EPISODE: " + title)
+            self.store(title, 'downloaded')
+            self.pyload.api.addPackage(title.encode("utf-8"), link, 1 if self.get_config("queue") else 0)
             self.added_items.append(title.encode("utf-8"))
