@@ -47,10 +47,10 @@ def send_mail(text):
     server.sendmail(fromaddr, toaddrs, msg)
     server.quit()
     
-def notifyPushover(api ='', msg=''):
+def notifyPushover(api ='', api2 ='', msg=''):
     data = urllib.urlencode({
         'user': api,
-        'token': 'aBGPe78hyxBKfRawhuGbzttrEaQ9rW',
+        'token': api2,
         'title': 'pyLoad: SJHook added Package',
         'message': "\n\n".join(msg)
     })
@@ -88,7 +88,7 @@ def notifyPushbullet(api='', msg=''):
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "2.0"
+    __version__ = "2.1"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
@@ -98,7 +98,8 @@ class SJ(Hook):
                   ("language", """DEUTSCH;ENGLISCH""", "Sprache", "DEUTSCH"),
                   ("interval", "int", "Interval", "60"),
                   ("hoster", """ul;so;fm;cz;alle""", "ul.to, filemonkey, cloudzer, share-online oder alle", "ul"),
-                  ("pushoverapi", "str", "deine pushoverapi api", ""),
+                  ("pushoverapi", "str", "deine pushoverapi user key", ""),
+                  ("pushoverapi2", "str", "deine pushoverapi api key", ""),
                   ("queue", "bool", "Direkt in die Warteschlange?", "False"),
                   ("pushbulletapi","str","Your Pushbullet-API key","")]
     __author_name__ = ("gutz-pilz","zapp-brannigan")
@@ -172,7 +173,7 @@ class SJ(Hook):
         if len(self.get_config('pushbulletapi')) > 2:
             notifyPushbullet(self.get_config("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True
         if len(self.get_config('pushoverapi')) > 2:
-            notifyPushover(self.get_config("pushoverapi"),self.added_items) if len(self.added_items) > 0 else True
+            notifyPushover(self.get_config("pushoverapi"),self.get_config("pushoverapi2"),self.added_items) if len(self.added_items) > 0 else True
         send_mail(self.added_items) if len(self.added_items) > 0 else True 
                     
     def range_checkr(self, link, title):
