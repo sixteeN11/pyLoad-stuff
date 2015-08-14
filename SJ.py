@@ -88,7 +88,7 @@ def notifyPushbullet(api='', msg=''):
 
 class SJ(Hook):
     __name__ = "SJ"
-    __version__ = "2.1"
+    __version__ = "2.2"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
