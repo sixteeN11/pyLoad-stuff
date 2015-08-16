@@ -52,20 +52,14 @@ def notifyPushbullet(api='', msg='',location=''):
         print 'Pushbullet Fail'
 
 def make_tiny(url):
-    connection = httplib.HTTPSConnection('api.shorte.st', 443)
-    connection.connect()
-    connection.request('PUT', '/v1/data/url', json.dumps({
-           "urlToShorten": url,
-         }), {
-           "public-api-token": "049cd75ad7a6cc026ef7364fa38c8792",
-           "Content-Type": "application/json"
-         })
-    results = json.loads(connection.getresponse().read())
-    return results.get("shortenedUrl", "none").decode('utf-8')
+        request_url = ('http://tinyurl.com/api-create.php?' +
+        urlencode({'url':url}))
+        with contextlib.closing(urlopen(request_url)) as response:
+                return response.read().decode('utf-8')
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
-    __version__ = "2.1"
+    __version__ = "2.3"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
@@ -139,6 +133,7 @@ class HDAreaOrg(Hook):
         imdb_url = unicode.join(u'',map(unicode,imdb_url))
         imdb_url = re.sub(r'.*(imdb.*)"\starget.*', r'http://\1', imdb_url)
         if "http" in imdb_url:
+            imdb_url = re.findall(r'(https?:\/\/?imdb.com.+)', imdb_url)[0]
             page = urllib2.urlopen(imdb_url).read()
             imdb_site = BeautifulSoup(page)
             year_pattern = re.compile(r'[0-9]{4}')
