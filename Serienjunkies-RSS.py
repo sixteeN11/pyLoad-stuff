@@ -4,8 +4,8 @@ import feedparser, re, requests, codecs, os, sys
 from BeautifulSoup import BeautifulSoup
 
 ### Anpassen
-file = "SJ.txt"             # Dateiname für die gewünschte Serien
-rejectlist = "itunes;xxx"   # was darf nicht im titel vorkommen
+file = "SJ.txt"             # Datei für die gewünschten Serien
+rejectlist = "itunes;xxx"   # Was soll nicht im Titel vorkommen
 hoster = "ul"               # ul, filemonkey, cloudzer, share-online oder alle
 outputFilename = "rss.xml"  # wo soll die rss-datei gespeichert werden ?
 
