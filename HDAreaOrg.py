@@ -1,5 +1,5 @@
 from module.plugins.internal.Hook import Hook
-import feedparser, re, urllib2, urllib, httplib, base64, json
+import feedparser, re, urllib2, urllib, httplib, base64, json, contextlib
 from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
 
