@@ -38,9 +38,9 @@ Forumslink:
 
 [[ExternalScript] Updater.sh](Gutz-Pilz_hooks-updater.sh)
 ==============
-If you like my Scripts and like to stay up-to-date
-Just place this script in .pyload/scripts/pyload_start
-So every time pyLoad starts it checks this Repo for updates and replaces your local Gutz-Pilz Hooks
+ - If you like my Scripts and like to stay up-to-date
+ - Just place this script in .pyload/scripts/pyload_start
+ - So every time pyLoad starts it checks this Repo for updates and replaces your local Gutz-Pilz Hooks
 
 [FileBot.sh](https://gist.github.com/Gutz-Pilz)
 ==============
