@@ -59,7 +59,7 @@ def make_tiny(url):
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
-    __version__ = "2.3"
+    __version__ = "2.4"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
