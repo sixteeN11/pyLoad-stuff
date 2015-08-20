@@ -54,11 +54,6 @@ def make_rss(title, link, language):
     outputFile.write("\t\t<link>"+link+"</link>\n")
     outputFile.write("\t</item>\n")
 
-    
-feed = feedparser.parse('http://serienjunkies.org/xml/feeds/episoden.xml')
-if hoster == "alle":
-    hoster = "."
-
 ## Schreibe RSS
 outputFile = open(outputFilename, "w")
 # Schreibe RSS
@@ -70,7 +65,9 @@ outputFile.write("<description>Serienjunkies.org RSS Generator for Flexget</desc
 outputFile.write("<link>Serienjunkies.org</link>\n")
 outputFile.write("<ttl> </ttl>\n")
 
-
+feed = feedparser.parse('http://serienjunkies.org/xml/feeds/episoden.xml')
+if hoster == "alle":
+    hoster = "."
 now = datetime.datetime.now()
 for post in feed.entries:
     feed_date = re.sub(r"(\w{3},\s\d{2}\s\w{3}\s\d{4}).*", r"\1", post.published)
