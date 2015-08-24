@@ -237,9 +237,9 @@ class FileBot(Hook):
                             self.log_info(line.decode('utf-8').rstrip('\r|\n'))
                         proc.wait()
                 except:
-                    self.logInfo('kein Ordner zum cleanen vorhanden')
+                    self.log_info('kein Ordner zum cleanen vorhanden')
             else:
-                self.logInfo('executed')
+                self.log_info('executed')
                 subprocess.Popen(args, bufsize=-1)
                 try:
                     if self.get_config('cleanfolder') is True:
