@@ -6,7 +6,7 @@ from BeautifulSoup import BeautifulSoup
 ### Anpassen
 hoster = "ul"               # ul, so oder alle
 outputFilename = "rss.xml"  # wo soll die rss-datei gespeichert werden ?
-3Days = "True"              # die letzten 3 Tage durchsuchen? True=Ja.
+3Days = "True"              # die letzten 3 Tage durchsuchen ?
 
 def formatDate(dt):
     return dt.strftime("%a, %d %b %Y %H:%M:%S +0000")
