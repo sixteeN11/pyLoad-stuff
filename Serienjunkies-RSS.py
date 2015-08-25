@@ -6,6 +6,7 @@ from BeautifulSoup import BeautifulSoup
 ### Anpassen
 hoster = "ul"               # ul, so oder alle
 outputFilename = "rss.xml"  # wo soll die rss-datei gespeichert werden ?
+3Days = "True"              # die letzten 3 Tage durchsuchen? True=Ja.
 
 def formatDate(dt):
     return dt.strftime("%a, %d %b %Y %H:%M:%S +0000")
@@ -68,18 +69,26 @@ outputFile.write("<ttl> </ttl>\n")
 feed = feedparser.parse('http://serienjunkies.org/xml/feeds/episoden.xml')
 if hoster == "alle":
     hoster = "."
-now = datetime.datetime.now()
+today_ = datetime.datetime.now()
+yesterday_ = datetime.now() - datetime.timedelta(days = 1)
+daybeforeyesterday_ = = datetime.now() - datetime.timedelta(days = 2)
 for post in feed.entries:
     feed_date = re.sub(r"(\w{3},\s\d{2}\s\w{3}\s\d{4}).*", r"\1", post.published)
-    today = re.sub(r"(\w{3},\s\d{2}\s\w{3}\s\d{4}).*", r"\1", formatDate(now))
-    if feed_date == today:
-        link = post.link
-        language = re.sub(r'\[(.*)\].*', r'\1', post.title)
-        title = re.sub('\[.*\] ', '', post.title)
-        #print title 
-        #print link
-        #print language
-        range_checkr(link,title,language)
+    today = re.sub(r"(\w{3},\s\d{2}\s\w{3}\s\d{4}).*", r"\1", formatDate(today_))
+    yesterday = re.sub(r"(\w{3},\s\d{2}\s\w{3}\s\d{4}).*", r"\1", formatDate(yesterday_))
+    daybeforeyesterday = re.sub(r"(\w{3},\s\d{2}\s\w{3}\s\d{4}).*", r"\1", formatDate(daybeforeyesterday_))
+    if not 3Days:
+        if feed_date == today:
+            link = post.link
+            language = re.sub(r'\[(.*)\].*', r'\1', post.title)
+            title = re.sub('\[.*\] ', '', post.title)
+            range_checkr(link,title,language)
+    else:
+        if (feed_date == today) or (feed_date == yesterday) or (feed_date == daybeforeyesterday):
+            link = post.link
+            language = re.sub(r'\[(.*)\].*', r'\1', post.title)
+            title = re.sub('\[.*\] ', '', post.title)
+            range_checkr(link,title,language)
 
 # Schreibe RSS footer
 outputFile.write("</channel>\n")
