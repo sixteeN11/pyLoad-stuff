@@ -6,7 +6,7 @@ from BeautifulSoup import BeautifulSoup
 ### Anpassen
 hoster = "ul"               # ul, so oder alle
 outputFilename = "rss.xml"  # wo soll die rss-datei gespeichert werden ?
-3Days = "True"              # die letzten 3 Tage durchsuchen ?
+ThreeDays = "True"
 
 def formatDate(dt):
     return dt.strftime("%a, %d %b %Y %H:%M:%S +0000")
@@ -70,14 +70,14 @@ feed = feedparser.parse('http://serienjunkies.org/xml/feeds/episoden.xml')
 if hoster == "alle":
     hoster = "."
 today_ = datetime.datetime.now()
-yesterday_ = datetime.now() - datetime.timedelta(days = 1)
-daybeforeyesterday_ = = datetime.now() - datetime.timedelta(days = 2)
+yesterday_ = datetime.datetime.now() - datetime.timedelta(days = 1)
+daybeforeyesterday_ = datetime.datetime.now() - datetime.timedelta(days = 2)
 for post in feed.entries:
     feed_date = re.sub(r"(\w{3},\s\d{2}\s\w{3}\s\d{4}).*", r"\1", post.published)
     today = re.sub(r"(\w{3},\s\d{2}\s\w{3}\s\d{4}).*", r"\1", formatDate(today_))
     yesterday = re.sub(r"(\w{3},\s\d{2}\s\w{3}\s\d{4}).*", r"\1", formatDate(yesterday_))
     daybeforeyesterday = re.sub(r"(\w{3},\s\d{2}\s\w{3}\s\d{4}).*", r"\1", formatDate(daybeforeyesterday_))
-    if not 3Days:
+    if not ThreeDays:
         if feed_date == today:
             link = post.link
             language = re.sub(r'\[(.*)\].*', r'\1', post.title)
