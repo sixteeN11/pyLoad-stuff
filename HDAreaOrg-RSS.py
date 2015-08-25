@@ -41,10 +41,14 @@ def get_download(soup1, title):
         links = soup_.findAll("span", {"style":"display:inline;"})
         for link in links:
             url = link.a["href"]
-            if hoster.lower() in link.text.lower():
-                get_year(soup1, title, url, rls_title)
+            if imdb_title:
+                if hoster.lower() in link.text.lower():
+                    get_year(soup1, url, rls_title)
+            else:
+                make_rss(rls_title,url)
+                print url+"\n"
 
-def get_year(soup1, title, dlLink, rls_title):
+def get_year(soup1, dlLink, rls_title):
     imdb_url = soup1.find("div", {"class" : "boxrechts"})
     imdb_url = unicode.join(u'',map(unicode,imdb_url))
     imdb_url = re.sub(r'.*(imdb.*)"\starget.*', r'http://\1', imdb_url)
@@ -58,16 +62,11 @@ def get_year(soup1, title, dlLink, rls_title):
         year = re.sub(r".*([0-9]{4}).*", r"\1", year)
         orig_title = imdb_site.find("span", {"class" : "itemprop"}).getText()
         title = replaceUmlauts(orig_title)
-        if not imdb_title:
-            print rls_title
-            make_rss(rls_title,dlLink)
-        else:
-            print title+" ("+year+")"
-            make_rss(title,dlLink)
+        print title+" ("+year+")"
         print dlLink+"\n"
-
-
-for site in ('top-rls','Cinedubs'): #
+        make_rss(title,dlLink)
+    
+for site in ('top-rls','movies','Old_Stuff','Cinedubs'): #
     address = ('http://hd-area.org/index.php?s=' + site)
     page = urllib2.urlopen(address).read()
     soup = BeautifulSoup(page)
