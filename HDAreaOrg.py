@@ -61,7 +61,7 @@ def make_tiny(url):
 
 class HDAreaOrg(Hook):
     __name__ = "HDAreaOrg"
-    __version__ = "2.5"
+    __version__ = "2.6"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
@@ -135,7 +135,7 @@ class HDAreaOrg(Hook):
         imdb_url = unicode.join(u'',map(unicode,imdb_url))
         imdb_url = re.sub(r'.*(imdb.*)"\starget.*', r'http://\1', imdb_url)
         if "http" in imdb_url:
-            imdb_url = re.findall(r'(https?:\/\/?imdb.com.+)', imdb_url)[0]
+            imdb_url = re.findall(r'(https?:\/\/?imdb.(de|com).+)', imdb_url)[0]
             page = urllib2.urlopen(imdb_url).read()
             imdb_site = BeautifulSoup(page)
             year_pattern = re.compile(r'[0-9]{4}')
