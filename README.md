@@ -1,4 +1,4 @@
-[[Hook] HDAreaOrg.py](HDAreaOrg.py)
+[Hook] HDAreaOrg.py
 ==============
  - eigenständiger Moviefetcher
  - Sucht jede Kategorie nach neuen Filmen ab und fügt diese pyLoad hinzu
@@ -10,7 +10,7 @@
  Forumslink:
  `http://forum.pyload.org/viewtopic.php?f=9&t=3126`
 
-[[Hook] SJ.py](SJ.py)
+[Hook] SJ.py
 ==============
  - Sucht den serienjunk**s rss nach neuen Episoden ab.
  - Definiere Serie und deren Qualität, Sprache, ReleaseGroup individuell über eine Textdatei fest
@@ -26,7 +26,7 @@
  Forumslink:
  `http://forum.pyload.org/viewtopic.php?f=9&t=3580`
 
-[[Hook] FileBot.py](FileBot.py)
+[Hook] FileBot.py
 ==============
 This Hook uses the FileBot program from rednoah to have downloaded Movies/Series/Animes automatically renamed and sorted.
 
@@ -36,7 +36,7 @@ restart pyload and configure it.
 Forumslink:
  `http://forum.pyload.org/viewtopic.php?f=9&t=2984`
 
-[[ExternalScript] Updater.sh](Gutz-Pilz_hooks-updater.sh)
+[ExternalScript] Updater.sh
 ==============
  - If you like my Scripts and like to stay up-to-date
  - Just place this script in .pyload/scripts/pyload_start
