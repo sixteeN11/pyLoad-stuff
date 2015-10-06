@@ -42,13 +42,6 @@ Forumslink:
  - Just place this script in .pyload/scripts/pyload_start
  - So every time pyLoad starts it checks this Repo for updates and replaces your local Gutz-Pilz Hooks
 
-[FileBot.sh](https://gist.github.com/Gutz-Pilz)
-==============
-Extra Skript um zusätzlich Befehle auf die von Filebot bewegte Datei auszuführen
- - Erstellungsdatum auf "jetzt" setzen
- - Lese und Schreibrechte für jedermann
- - sende email/pushbullet mit Pfad und GrößenInformation
-
 Donations
 ---------
 
