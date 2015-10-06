@@ -48,7 +48,11 @@ Extra Skript um zusätzlich Befehle auf die von Filebot bewegte Datei auszuführ
  - Erstellungsdatum auf "jetzt" setzen
  - Lese und Schreibrechte für jedermann
  - sende email/pushbullet mit Pfad und GrößenInformation
- 
- 
+
+Donations
+---------
+
+[![Donation](https://img.shields.io/badge/donate-paypal-orange.svg)](https://www.paypal.com/de/cgi-bin/webscr?cmd=_flow&SESSION=HPdNVGi4CHt5tCbWgHkERZYtoiWVRoPnNpkKT6UO2KKU4F89EKTo1Vt2wlW&dispatch=5885d80a13c0db1f8e263663d3faee8d0b9dcb01a9b6dc564e45f62871326a5e)
+
 Have fun
 Gutz-Pilz
