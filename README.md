@@ -5,7 +5,7 @@
  - Minimum Rating für Queue und Collector
  - Definiere deine bevorzugten Hoster
  - Schliesse ungewollte Genre aus
- - Pushover und PushPullet Notifications.
+ - Pushover und Pushbullet Notifications.
 
  Forumslink:
  `http://forum.pyload.org/viewtopic.php?f=9&t=3126`
