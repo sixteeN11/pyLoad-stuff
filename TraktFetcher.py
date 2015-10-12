@@ -138,7 +138,7 @@ class TraktFetcher(Hook):
                                 url = link.a["href"]
                                 for hoster in self.get_config("hoster").split(";"):
                                     if hoster.lower() in link.text.lower():
-                                        self.log_info("ADDED: "+title+" with"+releaseName)
+                                        self.log_info('ADDED: "'+title+'" Releasename: '+releaseName)
                                         self.pyload.api.addPackage(title, url.split('"'), 0)
                                         self.items_to_pyload.append(title) 
                                         self.store(title, 'downloaded')
@@ -160,7 +160,7 @@ class TraktFetcher(Hook):
                                     url = link.a["href"]
                                     for hoster in self.get_config("hoster").split(";"):
                                         if hoster.lower() in link.text.lower():
-                                            self.log_info("ADDED: "+title+" with"+releaseName)
+                                            self.log_info('ADDED: "'+title+'" Releasename: '+releaseName)
                                             self.pyload.api.addPackage(title, url.split('"'), 0)
                                             self.items_to_pyload.append(title) 
                                             self.store(title, 'downloaded')
