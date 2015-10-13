@@ -113,7 +113,7 @@ class TraktFetcher(Hook):
             #print tmdb_link
             r = requests.get(tmdb_link)
             config = r.json()
-            if not config["total_results"] == 0:
+            if len(config["results"]) > 0:
                 orig_tmdb_title = replaceUmlauts(config["results"][0]["original_title"])
                 german_tmdb_title = replaceUmlauts(config["results"][0]["title"])
             else:
