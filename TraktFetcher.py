@@ -113,8 +113,11 @@ class TraktFetcher(Hook):
             #print tmdb_link
             r = requests.get(tmdb_link)
             config = r.json()
-            orig_tmdb_title = replaceUmlauts(config["results"][0]["original_title"])
-            german_tmdb_title = replaceUmlauts(config["results"][0]["title"])
+            if not config["total_results"] == 0:
+                orig_tmdb_title = replaceUmlauts(config["results"][0]["original_title"])
+                german_tmdb_title = replaceUmlauts(config["results"][0]["title"])
+            else:
+                continue
             searchLink_orig = "http://www.hd-area.org/?s=search&q=" + urllib2.quote(orig_tmdb_title.encode('utf-8'))
             searchLink_german = "http://www.hd-area.org/?s=search&q=" + urllib2.quote(german_tmdb_title.encode('utf-8'))
             page_orig = urllib2.urlopen(searchLink_orig).read()
