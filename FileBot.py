@@ -17,6 +17,8 @@ class FileBot(Addon):
                   ("conflict", """skip;override""", "conflict handling", "override"),
 
                   ("action", """move;copy;test""", "copy, move or test(dry run)", "move"),
+                  
+                  ("unsorted", """y;n""", "sort out files that cannot be proceed to $destination/unsorted/", "n"),
 
                   ("lang", "str", "language (en, de, fr, es, etc)", "de"),
 
@@ -178,7 +180,10 @@ class FileBot(Addon):
 
         if self.get_config('reperror'):
             args.append('reportError=' + self.get_config('reperror'))
-        
+
+        if self.getConfig('unsorted'):
+            args.append('unsorted=' + self.getConfig('unsorted'))
+            
         if self.get_config('storeReport'):
             args.append('storeReport=' + self.get_config('storeReport'))
 
