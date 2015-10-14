@@ -7,7 +7,7 @@ from module.utils import save_join
 
 class FileBot(Addon):
     __name__ = "FileBot"
-    __version__ = "1.3"
+    __version__ = "1.4"
     __type__    = "hook"
     __status__  = "testing"
     __config__ = [("activated", "bool", "Activated", "False"),
