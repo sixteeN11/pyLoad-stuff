@@ -1,4 +1,4 @@
-from module.plugins.internal.Hook import Hook
+from module.plugins.internal.Addon import Addon
 import feedparser, re, urllib2, urllib, httplib, base64, json, contextlib, HTMLParser, requests
 from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
@@ -61,9 +61,11 @@ def notifyPushbullet(api='', msg=''):
     else:
         print 'Pushbullet Fail'
 
-class TraktFetcher(Hook):
+class TraktFetcher(Addon):
     __name__ = "TraktFetcher"
-    __version__ = "0.1"
+    __version__ = "0.2"
+    __type__    = "hook"
+    __status__  = "testing"
     __description__ = "Searches HDArea for Trakt Watchlist Titles"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("traktuser", "str", "Dein Trakt Benutzername", "username"),
@@ -78,10 +80,9 @@ class TraktFetcher(Hook):
 
     MIN_CHECK_INTERVAL = 2 * 60 #2minutes
 
-    def init(self):
-        self.interval = self.MIN_CHECK_INTERVAL
     def activate(self):
         self.interval = max(self.MIN_CHECK_INTERVAL, self.get_config('interval') * 60)
+        self.start_periodical(self.get_config('interval') * 60)
     def periodical(self):
         html_parser = HTMLParser.HTMLParser()
         self.items_to_pyload = []
