@@ -1,57 +1,32 @@
-from module.plugins.internal.Hook import Hook
-import feedparser, re, urllib, urllib2, httplib, codecs, base64, json
+from module.plugins.internal.Addon import Addon
+import feedparser, re, urllib2, urllib, httplib, base64, json, contextlib, HTMLParser, requests
+from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
-from BeautifulSoup import BeautifulSoup
-import smtplib
-import pycurl
+from urllib import urlencode
+from urllib2 import urlopen
 
-def getSeriesList(file):
-    try:
-        titles = []
-        f = codecs.open(file, "rb", "utf-8")
-        for title in f.read().splitlines():
-            if len(title) == 0:
-                continue
-            title = title.replace(" ", ".")
-            titles.append(title)
-        f.close()
-        return titles
-    except UnicodeError:
-        self.core.log.error("Abbruch, es befinden sich ungueltige Zeichen in der Suchdatei!")
-    except IOError:
-        self.core.log.error("Abbruch, Suchdatei wurde nicht gefunden!")
-    except Exception, e:
-        self.core.log.error("Unbekannter Fehler: %s" %e)
+def replaceUmlauts(title):
+    title = title.replace(unichr(228), "ae").replace(unichr(196), "Ae")
+    title = title.replace(unichr(252), "ue").replace(unichr(220), "Ue")
+    title = title.replace(unichr(246), "oe").replace(unichr(214), "Oe")
+    title = title.replace(unichr(223), "ss")
+    title = title.replace('&amp;', "&")
+    title = title.replace("'", "")
+    title = title.replace(",", "")
+    title = title.replace("?", "")
+    title = title.replace("!", "")
+    title = title.replace("&", " ")
+    title = title.replace(" -", "")
+    title = title.replace(".", " ")
+    title = title.replace("  ", " ")
+    title = "".join(i for i in title if ord(i)<128)
+    return title
 
-def send_mail(text):
-    """Tested with googlemail.com and bitmessage.ch. It should work with all mailservices which provide SSL access.""" 
-    serveraddr = ''
-    serverport = '465'
-    username = ''
-    password = ''
-    fromaddr = ''
-    toaddrs  = ''
-    
-    if toaddrs == "":
-        return
-
-    subject = "pyLoad: Package added!"
-    msg = "\n".join(text)
-
-    header = "To: %s\nFrom:%s\nSubject:%s\n" %(toaddrs,fromaddr,subject)
-    msg = header + "\n" + msg
-
-    server = smtplib.SMTP_SSL(serveraddr,serverport)
-    server.ehlo()
-    server.login(username,password)
-    server.sendmail(fromaddr, toaddrs, msg)
-    server.quit()
-    
-def notifyPushover(api ='', api2 ='', msg=''):
+def notifyPushover(api ='', msg=''):
     data = urllib.urlencode({
         'user': api,
-        'token': api2,
-        'title': 'pyLoad: SJHook added Package',
+        'token': 'aBGPe78hyxBKfRawhuGbzttrEaQ9rW',
+        'title': 'pyLoad: TraktFetcher added Package',
         'message': "\n\n".join(msg)
     })
     try:
@@ -65,11 +40,11 @@ def notifyPushover(api ='', api2 ='', msg=''):
         print 'Pushover Success'
     else:
         print 'Pushover Fail' 
-    
+
 def notifyPushbullet(api='', msg=''):
     data = urllib.urlencode({
         'type': 'note',
-        'title': 'pyLoad: SJHook added Package',
+        'title': 'pyLoad: TraktFetcher added Package',
         'body': "\n\n".join(msg)
     })
     auth = base64.encodestring('%s:' %api).replace('\n', '')
@@ -86,147 +61,111 @@ def notifyPushbullet(api='', msg=''):
     else:
         print 'Pushbullet Fail'
 
-class SJ(Hook):
-    __name__ = "SJ"
-    __version__ = "2.3"
-    __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
+class TraktFetcher(Addon):
+    __name__ = "TraktFetcher"
+    __version__ = "0.2"
+    __type__    = "hook"
+    __status__  = "testing"
+    __description__ = "Searches HDArea for Trakt Watchlist Titles"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
-                  ("regex","bool","Eintraege aus der Suchdatei als regulaere Ausdruecke behandeln", "False"),
-                  ("quality", """480p;720p;1080p""", "480p, 720p oder 1080p", "720p"),
-                  ("file", "file", "Datei mit Seriennamen", "SJ.txt"),
-                  ("rejectlist", "str", "Titel ablehnen mit (; getrennt)", "dd51;itunes"),
-                  ("language", """DEUTSCH;ENGLISCH""", "Sprache", "DEUTSCH"),
-                  ("interval", "int", "Interval", "60"),
-                  ("hoster", """ul;so;fm;cz;alle""", "ul.to, filemonkey, cloudzer, share-online oder alle", "ul"),
-                  ("pushoverapi", "str", "deine pushoverapi user key", ""),
-                  ("pushoverapi2", "str", "deine pushoverapi api key", ""),
-                  ("queue", "bool", "Direkt in die Warteschlange?", "False"),
-                  ("pushbulletapi","str","Your Pushbullet-API key","")]
-    __author_name__ = ("gutz-pilz","zapp-brannigan")
-    __author_mail__ = ("unwichtig@gmail.com","")
+                  ("traktuser", "str", "Dein Trakt Benutzername", "username"),
+                  ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
+                  ("rejectList", "str", "ablehnen (; getrennt)", "dd51;itunes;doku"),
+                  ("interval", "int", "Intervall", "60"),
+                  ("pushoverapi", "str", "Dein Pushover-API-Key", ""),
+                  ("hoster", "str", "Hoster (durch ; getrennt)","uploaded;uplaoded"),
+                  ("pushbulletapi","str","Dein Pushbullet-API-Key","")]
+    __author_name__ = ("gutz-pilz")
+    __author_mail__ = ("unwichtig@gmail.com")
 
     MIN_CHECK_INTERVAL = 2 * 60 #2minutes
 
-    def init(self):
-        self.interval = self.MIN_CHECK_INTERVAL
-
     def activate(self):
-        self.pyload.config.setPlugin("SerienjunkiesOrg", "changeNameSJ", "Packagename")
-        self.pyload.config.setPlugin("SerienjunkiesOrg", "changeNameDJ", "Packagename")
         self.interval = max(self.MIN_CHECK_INTERVAL, self.get_config('interval') * 60)
-
+        self.start_periodical(self.get_config('interval') * 60)
     def periodical(self):
-        feed = feedparser.parse('http://serienjunkies.org/xml/feeds/episoden.xml')
-        self.pattern = "|".join(getSeriesList(self.get_config("file"))).lower()
-        reject = self.get_config("rejectlist").replace(";","|").lower() if len(self.get_config("rejectlist")) > 0 else "^unmatchable$"
-        self.quality = self.get_config("quality")
-        self.hoster = self.get_config("hoster")
-        if self.hoster == "alle":
-            self.hoster = "."
-        self.added_items = []
-        
-        for post in feed.entries:
-            link = post.link
-            title = post.title
-            
-            if self.get_config("regex"):
-                m = re.search(self.pattern,title.lower())
-                if not m and not "720p" in title and not "1080p" in title:
-                    m = re.search(self.pattern.replace("480p","."),title.lower())
-                    self.quality = "480p"
-                if m:
-                    if "720p" in title.lower(): self.quality = "720p"
-                    if "1080p" in title.lower(): self.quality = "1080p"
-                    m = re.search(reject,title.lower())
-                    if m:
-                        self.log_debug("Abgelehnt: " + title)
-                        continue
-                    title = re.sub('\[.*\] ', '', post.title)
-                    self.range_checkr(link,title)
-                                
-            else:
-                if self.get_config("quality") != '480p':
-                    m = re.search(self.pattern,title.lower())
-                    if m:
-                        if self.get_config("language") in title:
-                            mm = re.search(self.quality,title.lower())
-                            if mm:
-                                mmm = re.search(reject,title.lower())
-                                if mmm:
-                                    self.log_debug("Abgelehnt: " + title)
-                                    continue
-                                title = re.sub('\[.*\] ', '', post.title)
-                                self.range_checkr(link,title)
-        
+        html_parser = HTMLParser.HTMLParser()
+        self.items_to_pyload = []
+        address = ('https://trakt.tv/users/%s/watchlist' %self.get_config("traktuser"))
+        page = urllib2.urlopen(address).read()
+        soup = BeautifulSoup(page)
+        trakttitles = []
+        # Get Trakt Watchlist Titles
+        for all in soup.findAll("div", {"class" : "titles"}):
+            for title in all.findAll("h3"):
+                title = title.getText()
+                title = replaceUmlauts(html_parser.unescape(title))
+                storage = self.retrieve(title)
+                if (storage == 'downloaded'):
+                    self.log_debug(title+": already found and downloaded")
                 else:
-                    m = re.search(self.pattern,title.lower())
-                    if m:
-                        if self.get_config("language") in title:
-                            if "720p" in title.lower() or "1080p" in title.lower():
-                                continue
-                            mm = re.search(reject,title.lower())
-                            if mm:
-                                self.log_debug("Abgelehnt: " + title)
-                                continue
-                            title = re.sub('\[.*\] ', '', post.title)
-                            self.range_checkr(link,title)
+                    trakttitles.append(title)
+        self.search(trakttitles)
 
-        if len(self.get_config('pushbulletapi')) > 2:
-            notifyPushbullet(self.get_config("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True
+        #Pushnotification
         if len(self.get_config('pushoverapi')) > 2:
-            notifyPushover(self.get_config("pushoverapi"),self.get_config("pushoverapi2"),self.added_items) if len(self.added_items) > 0 else True
-        send_mail(self.added_items) if len(self.added_items) > 0 else True 
-                    
-    def range_checkr(self, link, title):
-        pattern = re.match(".*S\d{2}E\d{2}-\w?\d{2}.*", title)
-        if pattern is not None:
-            range0 = re.sub(r".*S\d{2}E(\d{2}-\w?\d{2}).*",r"\1", title).replace("E","")
-            number1 = re.sub(r"(\d{2})-\d{2}",r"\1", range0)
-            number2 = re.sub(r"\d{2}-(\d{2})",r"\1", range0)
-            title_cut = re.findall(r"(.*S\d{2}E)(\d{2}-\w?\d{2})(.*)",title)
-            for count in range(int(number1),(int(number2)+1)):
-                NR = re.match("d\{2}", str(count))
-                if NR is not None:
-                    title1 = title_cut[0][0] + str(count) + ".*" + title_cut[0][-1]
-                    self.range_parse(link, title1)
+            notifyPushover(self.get_config("pushoverapi"),self.items_to_pyload) if len(self.items_to_pyload) > 0 else True
+        if len(self.get_config('pushbulletapi')) > 2:
+            notifyPushbullet(self.get_config("pushbulletapi"),self.items_to_pyload) if len(self.items_to_pyload) > 0 else True
+
+    def search(self, trakttitles):
+        for title in trakttitles:
+            tmdb_link = "https://api.themoviedb.org/3/search/movie?api_key=4e33dc1073b5ad87851d8a4f506dc096&query=" + urllib2.quote(title.encode('utf-8')) +"&language=de"
+            #print tmdb_link
+            r = requests.get(tmdb_link)
+            config = r.json()
+            if len(config["results"]) > 0:
+                orig_tmdb_title = replaceUmlauts(config["results"][0]["original_title"])
+                german_tmdb_title = replaceUmlauts(config["results"][0]["title"])
+            else:
+                continue
+            searchLink_orig = "http://www.hd-area.org/?s=search&q=" + urllib2.quote(orig_tmdb_title.encode('utf-8'))
+            searchLink_german = "http://www.hd-area.org/?s=search&q=" + urllib2.quote(german_tmdb_title.encode('utf-8'))
+            page_orig = urllib2.urlopen(searchLink_orig).read()
+            page_german = urllib2.urlopen(searchLink_german).read()
+            soup_orig = BeautifulSoup(page_orig)
+            soup_german = BeautifulSoup(page_german)
+            self.log_debug('Suche "%s" auf HDArea' %german_tmdb_title)
+            for content_german in soup_german.findAll("div", {"class":"whitecontent contentheight"}):
+                searchLinks_german = content_german.findAll("a")
+                #print searchLinks_german
+                if len(searchLinks_german) > 0:
+                    for link in searchLinks_german:
+                        href = link["href"]
+                        releaseName = link.getText()
+                        season = re.compile('.*S\d|\Sd{2}|eason\d|eason\d{2}.*')
+                        if (self.get_config("quality") in releaseName) and not any (word.lower() in releaseName.lower() for word in self.get_config("rejectList").split(";")) and not season.match(releaseName):
+                            req_page = requests.get(href).text
+                            soup_ = BeautifulSoup(req_page)
+                            links = soup_.findAll("span", {"style":"display:inline;"})
+                            for link in links:
+                                url = link.a["href"]
+                                for hoster in self.get_config("hoster").split(";"):
+                                    if hoster.lower() in link.text.lower():
+                                        self.log_info('ADDED: "'+title+'" Releasename: '+releaseName)
+                                        self.pyload.api.addPackage(title, url.split('"'), 0)
+                                        self.items_to_pyload.append(title) 
+                                        self.store(title, 'downloaded')
+                            break
                 else:
-                    title1 = title_cut[0][0] + "0" + str(count) + ".*" + title_cut[0][-1]
-                    self.range_parse(link, title1)
-        else:
-            self.parse_download(link, title)
-
-
-    def range_parse(self,series_url, search_title):
-        req_page = getURL(series_url)
-        soup = BeautifulSoup(req_page)
-        titles = soup.findAll(text=re.compile(search_title))
-        for title in titles:
-           if self.quality !='480p' and self.quality in title: 
-               self.parse_download(series_url, title)
-           if self.quality =='480p' and not (('.720p.' in title) or ('.1080p.' in title)):               
-               self.parse_download(series_url, title)
-
-
-    def parse_download(self,series_url, search_title):
-        req_page = getURL(series_url)
-        soup = BeautifulSoup(req_page)
-        title = soup.find(text=re.compile(search_title))
-        if title:
-            items = []
-            links = title.parent.parent.findAll('a')
-            for link in links:
-                url = link['href']
-                pattern = '.*%s_.*' % self.hoster
-                if re.match(pattern, url):
-                    items.append(url)
-            self.send_package(title,items) if len(items) > 0 else True
-                 
-    def send_package(self, title, link):
-        storage = self.retrieve(title)
-        if storage == 'downloaded':
-            self.log_debug(title + " already downloaded")
-        else:
-            self.log_info("NEW EPISODE: " + title)
-            self.store(title, 'downloaded')
-            self.pyload.api.addPackage(title.encode("utf-8"), link, 1 if self.get_config("queue") else 0)
-            self.added_items.append(title.encode("utf-8"))
+                    self.log_debug('keine Suchergebnisse mit deutschem Titel gefunden: "%s"' %german_tmdb_title)
+                    self.log_debug("suche mit englischem Titel: %s" %orig_tmdb_title)
+                    for content_orig in soup_orig.findAll("div", {"class":"whitecontent contentheight"}):
+                        searchLinks_orig = content_orig.findAll("a")
+                        for link in searchLinks_orig:
+                            href = link["href"]
+                            releaseName = link.getText()
+                            season = re.compile('.*S\d|\Sd{2}|eason\d|eason\d{2}.*')
+                            if (self.get_config("quality") in releaseName) and not any (word.lower() in releaseName.lower() for word in self.get_config("rejectList").split(";")) and not season.match(releaseName):
+                                req_page = requests.get(href).text
+                                soup_ = BeautifulSoup(req_page)
+                                links = soup_.findAll("span", {"style":"display:inline;"})
+                                for link in links:
+                                    url = link.a["href"]
+                                    for hoster in self.get_config("hoster").split(";"):
+                                        if hoster.lower() in link.text.lower():
+                                            self.log_info('ADDED: "'+title+'" Releasename: '+releaseName)
+                                            self.pyload.api.addPackage(title, url.split('"'), 0)
+                                            self.items_to_pyload.append(title) 
+                                            self.store(title, 'downloaded')
+                                break
