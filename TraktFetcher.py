@@ -78,10 +78,7 @@ class TraktFetcher(Addon):
     __author_name__ = ("gutz-pilz")
     __author_mail__ = ("unwichtig@gmail.com")
 
-    MIN_CHECK_INTERVAL = 2 * 60 #2minutes
-
     def activate(self):
-        self.interval = max(self.MIN_CHECK_INTERVAL, self.get_config('interval') * 60)
         self.start_periodical(self.get_config('interval') * 60)
     def periodical(self):
         html_parser = HTMLParser.HTMLParser()
