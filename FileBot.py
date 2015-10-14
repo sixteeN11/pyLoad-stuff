@@ -1,13 +1,15 @@
 import subprocess, re, os, sys, subprocess
 from os import listdir, access, X_OK, makedirs
 from os.path import join, exists, basename
-from module.plugins.internal.Hook import Hook
+from module.plugins.internal.Addon import Addon
 from module.utils import save_join
 
 
-class FileBot(Hook):
+class FileBot(Addon):
     __name__ = "FileBot"
-    __version__ = "1.2"
+    __version__ = "1.3"
+    __type__    = "hook"
+    __status__  = "testing"
     __config__ = [("activated", "bool", "Activated", "False"),
 
                   ("destination", "folder", "destination folder", ""),
