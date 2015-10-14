@@ -45,7 +45,7 @@ Forumslink:
 Donations
 ---------
 
-[![Donation](https://img.shields.io/badge/donate-paypal-orange.svg)](https://www.paypal.com/de/cgi-bin/webscr?cmd=_flow&SESSION=HPdNVGi4CHt5tCbWgHkERZYtoiWVRoPnNpkKT6UO2KKU4F89EKTo1Vt2wlW&dispatch=5885d80a13c0db1f8e263663d3faee8d0b9dcb01a9b6dc564e45f62871326a5e)
+[![Donation](https://img.shields.io/badge/donate-paypal-orange.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=C8GN3XSZARS9N)
 
 Have fun
 Gutz-Pilz
