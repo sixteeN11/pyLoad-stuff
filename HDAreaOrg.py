@@ -1,4 +1,4 @@
-from module.plugins.internal.Hook import Hook
+from module.plugins.internal.Addon import Addon
 import feedparser, re, urllib2, urllib, httplib, base64, json, contextlib
 from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
@@ -59,9 +59,11 @@ def make_tiny(url):
         with contextlib.closing(urlopen(request_url)) as response:
                 return response.read().decode('utf-8')
 
-class HDAreaOrg(Hook):
+class HDAreaOrg(Addon):
     __name__ = "HDAreaOrg"
-    __version__ = "2.7"
+    __version__ = "2.6"
+    __type__    = "hook"
+    __status__  = "testing"
     __description__ = "Get new movies from HD-area"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
                   ("quality", """720p;1080p""", "720p oder 1080p", "720p"),
@@ -78,14 +80,8 @@ class HDAreaOrg(Hook):
     __author_name__ = ("gutz-pilz")
     __author_mail__ = ("unwichtig@gmail.com")
 
-    MIN_CHECK_INTERVAL = 2 * 60 #2minutes
-
-    def init(self):
-        self.interval = self.MIN_CHECK_INTERVAL
     def activate(self):
-        self.pyload.config.setPlugin("SerienjunkiesOrg", "changeNameSJ", "Packagename")
-        self.pyload.config.setPlugin("SerienjunkiesOrg", "changeNameDJ", "Packagename")
-        self.interval = max(self.MIN_CHECK_INTERVAL, self.get_config('interval') * 60)
+        self.start_periodical(self.get_config('interval') * 60)         
     def periodical(self):
         self.items_to_queue = []
         self.items_to_collector = []
