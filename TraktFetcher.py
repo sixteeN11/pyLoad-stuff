@@ -1,9 +1,7 @@
 from module.plugins.internal.Addon import Addon
-import feedparser, re, urllib2, urllib, httplib, base64, json, contextlib, HTMLParser, requests
+import re, urllib2, urllib, httplib, base64, json, contextlib, HTMLParser, requests
 from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
-from urllib import urlencode
-from urllib2 import urlopen
 
 def replaceUmlauts(title):
     title = title.replace(unichr(228), "ae").replace(unichr(196), "Ae")
@@ -18,6 +16,7 @@ def replaceUmlauts(title):
     title = title.replace("&", " ")
     title = title.replace(" -", "")
     title = title.replace(".", " ")
+    title = title.replace(":", " ")
     title = title.replace("  ", " ")
     title = "".join(i for i in title if ord(i)<128)
     return title
@@ -27,7 +26,7 @@ def notifyPushover(api ='', msg=''):
         'user': api,
         'token': 'aBGPe78hyxBKfRawhuGbzttrEaQ9rW',
         'title': 'pyLoad: TraktFetcher added Package',
-        'message': "\n\n".join(msg)
+        'message': "\n".join(msg)
     })
     try:
         req = urllib2.Request('https://api.pushover.net/1/messages.json', data)
@@ -63,7 +62,7 @@ def notifyPushbullet(api='', msg=''):
 
 class TraktFetcher(Addon):
     __name__ = "TraktFetcher"
-    __version__ = "0.2"
+    __version__ = "0.3"
     __type__    = "hook"
     __status__  = "testing"
     __description__ = "Searches HDArea for Trakt Watchlist Titles"
@@ -125,7 +124,6 @@ class TraktFetcher(Addon):
             self.log_debug('Suche "%s" auf HDArea' %german_tmdb_title)
             for content_german in soup_german.findAll("div", {"class":"whitecontent contentheight"}):
                 searchLinks_german = content_german.findAll("a")
-                #print searchLinks_german
                 if len(searchLinks_german) > 0:
                     for link in searchLinks_german:
                         href = link["href"]
@@ -141,7 +139,7 @@ class TraktFetcher(Addon):
                                     if hoster.lower() in link.text.lower():
                                         self.log_info('ADDED: "'+title+'" Releasename: '+releaseName)
                                         self.pyload.api.addPackage(title, url.split('"'), 0)
-                                        self.items_to_pyload.append(title) 
+                                        self.items_to_pyload.append(title+"  ||  Link: "+href) 
                                         self.store(title, 'downloaded')
                             break
                 else:
@@ -163,6 +161,6 @@ class TraktFetcher(Addon):
                                         if hoster.lower() in link.text.lower():
                                             self.log_info('ADDED: "'+title+'" Releasename: '+releaseName)
                                             self.pyload.api.addPackage(title, url.split('"'), 0)
-                                            self.items_to_pyload.append(title) 
+                                            self.items_to_pyload.append(title+"  ||  Link: "+href) 
                                             self.store(title, 'downloaded')
                                 break
