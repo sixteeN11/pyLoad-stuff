@@ -7,7 +7,7 @@ from module.utils import save_join
 
 class FileBot(Addon):
     __name__ = "FileBot"
-    __version__ = "1.5"
+    __version__ = "1.6"
     __type__    = "hook"
     __status__  = "testing"
     __config__ = [("activated", "bool", "Activated", "False"),
@@ -181,8 +181,8 @@ class FileBot(Addon):
         if self.get_config('reperror'):
             args.append('reportError=' + self.get_config('reperror'))
 
-        if self.getConfig('unsorted'):
-            args.append('unsorted=' + self.getConfig('unsorted'))
+        if self.get_config('unsorted'):
+            args.append('unsorted=' + self.get_config('unsorted'))
             
         if self.get_config('storeReport'):
             args.append('storeReport=' + self.get_config('storeReport'))
