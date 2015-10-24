@@ -1,7 +1,8 @@
 from module.plugins.internal.Addon import Addon
-import re, urllib2, urllib, httplib, base64, json, contextlib, HTMLParser, requests
+import re, urllib2, urllib, httplib, base64, contextlib, HTMLParser
 from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
+from module.plugins.internal.utils import json
 
 def replaceUmlauts(title):
     title = title.replace(unichr(228), "ae").replace(unichr(196), "Ae")
@@ -83,7 +84,7 @@ class TraktFetcher(Addon):
         html_parser = HTMLParser.HTMLParser()
         self.items_to_pyload = []
         address = ('https://trakt.tv/users/%s/watchlist' %self.get_config("traktuser"))
-        page = urllib2.urlopen(address).read()
+        page = getURL(address)
         soup = BeautifulSoup(page)
         trakttitles = []
         # Get Trakt Watchlist Titles
@@ -108,17 +109,19 @@ class TraktFetcher(Addon):
         for title in trakttitles:
             tmdb_link = "https://api.themoviedb.org/3/search/movie?api_key=4e33dc1073b5ad87851d8a4f506dc096&query=" + urllib2.quote(title.encode('utf-8')) +"&language=de"
             #print tmdb_link
-            r = requests.get(tmdb_link)
-            config = r.json()
-            if len(config["results"]) > 0:
-                orig_tmdb_title = replaceUmlauts(config["results"][0]["original_title"])
-                german_tmdb_title = replaceUmlauts(config["results"][0]["title"])
+            json_data = self.load("https://api.themoviedb.org/3/search/movie?api_key=4e33dc1073b5ad87851d8a4f506dc096&query="+ urllib2.quote(title.encode('utf-8')) +"&language=de")
+            json_data = json.loads(json_data)
+            #r = getURL(tmdb_link)
+            #config = r.json()
+            if len(json_data["results"]) > 0:
+                orig_tmdb_title = replaceUmlauts(json_data["results"][0]["original_title"])
+                german_tmdb_title = replaceUmlauts(json_data["results"][0]["title"])
             else:
                 continue
             searchLink_orig = "http://www.hd-area.org/?s=search&q=" + urllib2.quote(orig_tmdb_title.encode('utf-8'))
             searchLink_german = "http://www.hd-area.org/?s=search&q=" + urllib2.quote(german_tmdb_title.encode('utf-8'))
-            page_orig = urllib2.urlopen(searchLink_orig).read()
-            page_german = urllib2.urlopen(searchLink_german).read()
+            page_orig = getURL(searchLink_orig)
+            page_german = getURL(searchLink_german)
             soup_orig = BeautifulSoup(page_orig)
             soup_german = BeautifulSoup(page_german)
             self.log_debug('Suche "%s" auf HDArea' %german_tmdb_title)
@@ -130,7 +133,7 @@ class TraktFetcher(Addon):
                         releaseName = link.getText()
                         season = re.compile('.*S\d|\Sd{2}|eason\d|eason\d{2}.*')
                         if (self.get_config("quality") in releaseName) and not any (word.lower() in releaseName.lower() for word in self.get_config("rejectList").split(";")) and not season.match(releaseName):
-                            req_page = requests.get(href).text
+                            req_page = href.getText()
                             soup_ = BeautifulSoup(req_page)
                             links = soup_.findAll("span", {"style":"display:inline;"})
                             for link in links:
@@ -152,7 +155,7 @@ class TraktFetcher(Addon):
                             releaseName = link.getText()
                             season = re.compile('.*S\d|\Sd{2}|eason\d|eason\d{2}.*')
                             if (self.get_config("quality") in releaseName) and not any (word.lower() in releaseName.lower() for word in self.get_config("rejectList").split(";")) and not season.match(releaseName):
-                                req_page = requests.get(href).text
+                                req_page = href.getText()
                                 soup_ = BeautifulSoup(req_page)
                                 links = soup_.findAll("span", {"style":"display:inline;"})
                                 for link in links:
@@ -164,3 +167,4 @@ class TraktFetcher(Addon):
                                             self.items_to_pyload.append(title+"  ||  Link: "+href) 
                                             self.store(title, 'downloaded')
                                 break
+
