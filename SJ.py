@@ -89,7 +89,7 @@ def notifyPushbullet(api='', msg=''):
 class SJ(Addon):
     __name__ = "SJ"
     __type__    = "hook"
-    __version__ = "2.4"
+    __version__ = "2.5"
     __status__  = "testing"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
@@ -110,8 +110,6 @@ class SJ(Addon):
     MIN_CHECK_INTERVAL = 2 * 60 #2minutes
 
     def activate(self):
-        self.pyload.config.setPlugin("SerienjunkiesOrg", "changeNameSJ", "Packagename")
-        self.pyload.config.setPlugin("SerienjunkiesOrg", "changeNameDJ", "Packagename")
         self.start_periodical(self.get_config('interval') * 60)
 
     def periodical(self):
