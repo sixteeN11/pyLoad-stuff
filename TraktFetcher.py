@@ -90,7 +90,7 @@ class TraktFetcher(Addon):
         # Get Trakt Watchlist Titles
         for all in soup.findAll("div", {"class" : "titles"}):
             for title in all.findAll("h3"):
-                title = title.getText()
+                title = title.get_text()
                 title = replaceUmlauts(html_parser.unescape(title))
                 storage = self.retrieve(title)
                 if (storage == 'downloaded'):
@@ -130,10 +130,10 @@ class TraktFetcher(Addon):
                 if len(searchLinks_german) > 0:
                     for link in searchLinks_german:
                         href = link["href"]
-                        releaseName = link.getText()
+                        releaseName = link.get_text()
                         season = re.compile('.*S\d|\Sd{2}|eason\d|eason\d{2}.*')
                         if (self.get_config("quality") in releaseName) and not any (word.lower() in releaseName.lower() for word in self.get_config("rejectList").split(";")) and not season.match(releaseName):
-                            req_page = href.getText()
+                            req_page = href.get_text()
                             soup_ = BeautifulSoup(req_page)
                             links = soup_.findAll("span", {"style":"display:inline;"})
                             for link in links:
@@ -152,10 +152,10 @@ class TraktFetcher(Addon):
                         searchLinks_orig = content_orig.findAll("a")
                         for link in searchLinks_orig:
                             href = link["href"]
-                            releaseName = link.getText()
+                            releaseName = link.get_text()
                             season = re.compile('.*S\d|\Sd{2}|eason\d|eason\d{2}.*')
                             if (self.get_config("quality") in releaseName) and not any (word.lower() in releaseName.lower() for word in self.get_config("rejectList").split(";")) and not season.match(releaseName):
-                                req_page = href.getText()
+                                req_page = href.get_text()
                                 soup_ = BeautifulSoup(req_page)
                                 links = soup_.findAll("span", {"style":"display:inline;"})
                                 for link in links:
