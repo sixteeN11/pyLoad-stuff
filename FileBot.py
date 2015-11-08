@@ -7,7 +7,7 @@ from module.utils import save_join
 
 class FileBot(Addon):
     __name__ = "FileBot"
-    __version__ = "1.6"
+    __version__ = "1.7"
     __type__    = "hook"
     __status__  = "testing"
     __config__ = [("activated", "bool", "Activated", "False"),
@@ -74,12 +74,12 @@ class FileBot(Addon):
 
     def coreReady(self):
         self.pyload.config.set("general", "folder_per_package", "True")
-        self.pyload.config.setPlugin("FileBot", "exec", 'cd / && ./filebot.sh "{file}"')
+        ##self.pyload.config.setPlugin("FileBot", "exec", 'cd / && ./filebot.sh "{file}"')
         if self.get_config('delete_extracted') is True:
             self.pyload.config.setPlugin("ExtractArchive", "delete", "True")
             self.pyload.config.setPlugin("ExtractArchive", "deltotrash", "False")
         else:
-            self.pyload.config.setPlugin("ExtractArchive", "delete", "False", section='plugin')
+            self.pyload.config.setPlugin("ExtractArchive", "delete", "False")
 
     def package_finished(self, pypack):
         download_folder = self.pyload.config['general']['download_folder']
