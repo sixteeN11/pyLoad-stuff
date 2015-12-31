@@ -61,7 +61,7 @@ def make_tiny(url):
 
 class HDAreaOrg(Addon):
     __name__ = "HDAreaOrg"
-    __version__ = "2.6"
+    __version__ = "2.7"
     __type__    = "hook"
     __status__  = "testing"
     __description__ = "Get new movies from HD-area"
@@ -81,7 +81,7 @@ class HDAreaOrg(Addon):
     __author_mail__ = ("unwichtig@gmail.com")
 
     def activate(self):
-        self.start_periodical(self.get_config('interval') * 60)         
+        self.periodical.start(self.get_config('interval') * 60)         
     def periodical(self):
         self.items_to_queue = []
         self.items_to_collector = []
