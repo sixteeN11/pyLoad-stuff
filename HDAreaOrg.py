@@ -61,7 +61,7 @@ def make_tiny(url):
 
 class HDAreaOrg(Addon):
     __name__ = "HDAreaOrg"
-    __version__ = "2.7"
+    __version__ = "2.8"
     __type__    = "hook"
     __status__  = "testing"
     __description__ = "Get new movies from HD-area"
@@ -82,7 +82,7 @@ class HDAreaOrg(Addon):
 
     def activate(self):
         self.periodical.start(self.get_config('interval') * 60)         
-    def periodical(self):
+    def periodical_task(self):
         self.items_to_queue = []
         self.items_to_collector = []
         for site in ('top-rls','movies','Old_Stuff'):
