@@ -89,7 +89,7 @@ def notifyPushbullet(api='', msg=''):
 class SJ(Addon):
     __name__ = "SJ"
     __type__    = "hook"
-    __version__ = "2.7"
+    __version__ = "2.8"
     __status__  = "testing"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
@@ -112,7 +112,7 @@ class SJ(Addon):
     def activate(self):
         self.periodical.start(self.get_config('interval') * 60)
 
-    def periodical(self):
+    def periodical_task(self):
         feed = feedparser.parse('http://serienjunkies.org/xml/feeds/episoden.xml')
         self.pattern = "|".join(getSeriesList(self.get_config("file"))).lower()
         reject = self.get_config("rejectlist").replace(";","|").lower() if len(self.get_config("rejectlist")) > 0 else "^unmatchable$"
