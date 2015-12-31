@@ -110,7 +110,7 @@ class SJ(Addon):
     MIN_CHECK_INTERVAL = 2 * 60 #2minutes
 
     def activate(self):
-        self.start_periodical(self.get_config('interval') * 60)
+        self.periodical.start(self.get_config('interval') * 60)
 
     def periodical(self):
         feed = feedparser.parse('http://serienjunkies.org/xml/feeds/episoden.xml')
