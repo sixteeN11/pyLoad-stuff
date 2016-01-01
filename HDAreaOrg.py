@@ -1,9 +1,14 @@
 from module.plugins.internal.Addon import Addon
-import feedparser, re, urllib2, urllib, httplib, base64, json, contextlib
+import feedparser, re, urllib2, urllib, httplib, base64, contextlib
 from BeautifulSoup import BeautifulSoup 
 from module.network.RequestFactory import getURL 
 from urllib import urlencode
 from urllib2 import urlopen
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 
 def replaceUmlauts(title):
     title = title.replace(unichr(228), "ae").replace(unichr(196), "Ae")
@@ -61,7 +66,7 @@ def make_tiny(url):
 
 class HDAreaOrg(Addon):
     __name__ = "HDAreaOrg"
-    __version__ = "2.9"
+    __version__ = "2.91"
     __type__    = "hook"
     __status__  = "testing"
     __description__ = "Get new movies from HD-area"
