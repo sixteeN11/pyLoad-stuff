@@ -61,7 +61,7 @@ def make_tiny(url):
 
 class HDAreaOrg(Addon):
     __name__ = "HDAreaOrg"
-    __version__ = "2.8"
+    __version__ = "2.9"
     __type__    = "hook"
     __status__  = "testing"
     __description__ = "Get new movies from HD-area"
@@ -81,7 +81,7 @@ class HDAreaOrg(Addon):
     __author_mail__ = ("unwichtig@gmail.com")
 
     def activate(self):
-        self.periodical.start(self.get_config('interval') * 60)         
+        self.periodical.start(self.config.get('interval') * 60)         
     def periodical_task(self):
         self.items_to_queue = []
         self.items_to_collector = []
@@ -90,30 +90,30 @@ class HDAreaOrg(Addon):
             req_page = getURL(address)
             soup = BeautifulSoup(req_page)
             self.get_title(soup)
-        if self.get_config("cinedubs") == True:
+        if self.config.get("cinedubs") == True:
             address = ('http://hd-area.org/index.php?s=Cinedubs')
             req_page = getURL(address)
             soup = BeautifulSoup(req_page)
             self.get_title(soup)
-        if len(self.get_config('pushoverapi')) > 2:
-            notifyPushover(self.get_config("pushoverapi"),self.items_to_queue,"QUEUE") if len(self.items_to_queue) > 0 else True
-            notifyPushover(self.get_config("pushoverapi"),self.items_to_collector,"COLLECTOR") if len(self.items_to_collector) > 0 else True
-        if len(self.get_config('pushbulletapi')) > 2:
-            notifyPushbullet(self.get_config("pushbulletapi"),self.items_to_queue,"QUEUE") if len(self.items_to_queue) > 0 else True
-            notifyPushbullet(self.get_config("pushbulletapi"),self.items_to_collector,"COLLECTOR") if len(self.items_to_collector) > 0 else True  
+        if len(self.config.get('pushoverapi')) > 2:
+            notifyPushover(self.config.get("pushoverapi"),self.items_to_queue,"QUEUE") if len(self.items_to_queue) > 0 else True
+            notifyPushover(self.config.get("pushoverapi"),self.items_to_collector,"COLLECTOR") if len(self.items_to_collector) > 0 else True
+        if len(self.config.get('pushbulletapi')) > 2:
+            notifyPushbullet(self.config.get("pushbulletapi"),self.items_to_queue,"QUEUE") if len(self.items_to_queue) > 0 else True
+            notifyPushbullet(self.config.get("pushbulletapi"),self.items_to_collector,"COLLECTOR") if len(self.items_to_collector) > 0 else True  
     def get_title(self,soup1):
         for all in soup1.findAll("div", {"class" : "topbox"}):
             for title in all.findAll("div", {"class" : "title"}):
                 title = title.getText()
                 title = replaceUmlauts(title)
                 season = re.compile('.*S\d|\Sd{2}|eason\d|eason\d{2}.*')
-                if (self.get_config("quality") in title) and not any (word.lower() in title.lower() for word in self.get_config("rejectList").split(";")) and not season.match(title):
-                    fetched = self.retrieve(title)
+                if (self.config.get("quality") in title) and not any (word.lower() in title.lower() for word in self.config.get("rejectList").split(";")) and not season.match(title):
+                    fetched = self.plugin.db.retrieve(title)
                     if fetched == 'fetched':
                         self.log_debug(title+ " already fetched")
                     else:
                         self.get_download(all, title)
-                        self.store(title, 'fetched')
+                        self.plugin.db.store(title, 'fetched')
     def get_download(self, soup1, title):
         for title in soup1.findAll("div", {"class" : "title"}):
             hda_url = title.a["href"].replace("https","http")
@@ -122,7 +122,7 @@ class HDAreaOrg(Addon):
             links = soup_.findAll("span", {"style":"display:inline;"})
             for link in links:
                 url = link.a["href"]
-                for pref_hoster in self.get_config("hoster"):
+                for pref_hoster in self.config.get("hoster"):
                     if pref_hoster.lower() in link.text.lower():
                         self.get_year(soup1, title, url)
                     break
@@ -140,7 +140,7 @@ class HDAreaOrg(Addon):
             year = re.sub(r".*([0-9]{4}).*", r"\1", year)
             orig_title = imdb_site.find("span", {"class" : "itemprop"}).getText()
             title = replaceUmlauts(orig_title)
-            if year > self.get_config("conf_year"):
+            if year > self.config.get("conf_year"):
                 self.get_genre(soup1, title, dlLink , year, imdb_url)
             else:
                 self.log_debug(title+" ("+year+"): zu ALT")
@@ -152,7 +152,7 @@ class HDAreaOrg(Addon):
         for genre in get_genre:
             genre = genre.getText().encode("utf-8")
             genres.append(genre)
-        if not any (word in genres for word in self.get_config("rej_genre").split(";")):
+        if not any (word in genres for word in self.config.get("rej_genre").split(";")):
             self.get_rating(soup1, title, dlLink , year, imdb_url)
         else:
             self.log_debug("" + title + " ("+year+"): GENRE passt nicht")
@@ -165,19 +165,19 @@ class HDAreaOrg(Addon):
                 rating = re.sub(r'(.*\s-/10)',r'0.1', rating)
                 rating = "".join(rating.split('\n'))
                 title = replaceUmlauts(title)
-                storage = self.retrieve(title)
+                storage = self.plugin.db.retrieve(title)
                 imdb_url = imdb_url.strip()
-                if rating < self.get_config("conf_rating_collector"):
+                if rating < self.config.get("conf_rating_collector"):
                     self.log_debug(title+" ("+year+") IMDb: "+rating+": zu SCHLECHT")
-                if (storage == 'downloaded') and not (rating < self.get_config("conf_rating_collector")):
+                if (storage == 'downloaded') and not (rating < self.config.get("conf_rating_collector")):
                     self.log_debug(title+" ("+year+")" + " already downloaded")
                 else:
-                    self.store(title, 'downloaded')
-                    if (rating < self.get_config("conf_rating_queue")) and (rating > self.get_config("conf_rating_collector")):
+                    self.plugin.db.store(title, 'downloaded')
+                    if (rating < self.config.get("conf_rating_queue")) and (rating > self.config.get("conf_rating_collector")):
                         self.log_info("COLLECTOR: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.pyload.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
                         self.items_to_collector.append(title.encode("utf-8")+" ("+year+")\nIMDb: "+rating+"  ||  Info: "+make_tiny(imdb_url)) 
-                    elif rating > self.get_config("conf_rating_queue"):
+                    elif rating > self.config.get("conf_rating_queue"):
                         self.log_info("QUEUE: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.pyload.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 1)
                         self.items_to_queue.append(title.encode("utf-8")+" ("+year+")\nIMDb: "+rating+"  ||  Info: "+make_tiny(imdb_url))
