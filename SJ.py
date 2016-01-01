@@ -1,9 +1,15 @@
 from module.plugins.internal.Addon import Addon
-import feedparser, re, urllib, urllib2, httplib, codecs, base64, json
+import feedparser, re, urllib, urllib2, httplib, codecs, base64
 from module.network.RequestFactory import getURL 
 from BeautifulSoup import BeautifulSoup
 import smtplib
 import pycurl
+
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 
 def getSeriesList(file):
     try:
@@ -89,7 +95,7 @@ def notifyPushbullet(api='', msg=''):
 class SJ(Addon):
     __name__ = "SJ"
     __type__    = "hook"
-    __version__ = "2.9"
+    __version__ = "2.91"
     __status__  = "testing"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
