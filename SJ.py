@@ -89,7 +89,7 @@ def notifyPushbullet(api='', msg=''):
 class SJ(Addon):
     __name__ = "SJ"
     __type__    = "hook"
-    __version__ = "2.8"
+    __version__ = "2.9"
     __status__  = "testing"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
@@ -110,14 +110,14 @@ class SJ(Addon):
     MIN_CHECK_INTERVAL = 2 * 60 #2minutes
 
     def activate(self):
-        self.periodical.start(self.get_config('interval') * 60)
+        self.periodical.start(self.config.get('interval') * 60)
 
     def periodical_task(self):
         feed = feedparser.parse('http://serienjunkies.org/xml/feeds/episoden.xml')
-        self.pattern = "|".join(getSeriesList(self.get_config("file"))).lower()
-        reject = self.get_config("rejectlist").replace(";","|").lower() if len(self.get_config("rejectlist")) > 0 else "^unmatchable$"
-        self.quality = self.get_config("quality")
-        self.hoster = self.get_config("hoster")
+        self.pattern = "|".join(getSeriesList(self.config.get("file"))).lower()
+        reject = self.config.get("rejectlist").replace(";","|").lower() if len(self.config.get("rejectlist")) > 0 else "^unmatchable$"
+        self.quality = self.config.get("quality")
+        self.hoster = self.config.get("hoster")
         if self.hoster == "alle":
             self.hoster = "."
         self.added_items = []
@@ -126,7 +126,7 @@ class SJ(Addon):
             link = post.link
             title = post.title
             
-            if self.get_config("regex"):
+            if self.config.get("regex"):
                 m = re.search(self.pattern,title.lower())
                 if not m and not "720p" in title and not "1080p" in title:
                     m = re.search(self.pattern.replace("480p","."),title.lower())
@@ -142,10 +142,10 @@ class SJ(Addon):
                     self.range_checkr(link,title)
                                 
             else:
-                if self.get_config("quality") != '480p':
+                if self.config.get("quality") != '480p':
                     m = re.search(self.pattern,title.lower())
                     if m:
-                        if self.get_config("language") in title:
+                        if self.config.get("language") in title:
                             mm = re.search(self.quality,title.lower())
                             if mm:
                                 mmm = re.search(reject,title.lower())
@@ -158,7 +158,7 @@ class SJ(Addon):
                 else:
                     m = re.search(self.pattern,title.lower())
                     if m:
-                        if self.get_config("language") in title:
+                        if self.config.get("language") in title:
                             if "720p" in title.lower() or "1080p" in title.lower():
                                 continue
                             mm = re.search(reject,title.lower())
@@ -168,10 +168,10 @@ class SJ(Addon):
                             title = re.sub('\[.*\] ', '', post.title)
                             self.range_checkr(link,title)
 
-        if len(self.get_config('pushbulletapi')) > 2:
-            notifyPushbullet(self.get_config("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True
-        if len(self.get_config('pushoverapi')) > 2:
-            notifyPushover(self.get_config("pushoverapi"),self.get_config("pushoverapi2"),self.added_items) if len(self.added_items) > 0 else True
+        if len(self.config.get('pushbulletapi')) > 2:
+            notifyPushbullet(self.config.get("pushbulletapi"),self.added_items) if len(self.added_items) > 0 else True
+        if len(self.config.get('pushoverapi')) > 2:
+            notifyPushover(self.config.get("pushoverapi"),self.config.get("pushoverapi2"),self.added_items) if len(self.added_items) > 0 else True
         send_mail(self.added_items) if len(self.added_items) > 0 else True 
                     
     def range_checkr(self, link, title):
@@ -220,13 +220,13 @@ class SJ(Addon):
 
     def send_package(self, title, link):
         try:
-            storage = self.retrieve(title)
+            storage = self.plugin.db.retrieve(title)
         except Exception:
-            self.log_debug("retrieve got exception, title: %s" % title)                 
+            self.log_debug("plugin.db.retrieve got exception, title: %s" % title)                 
         if storage == 'downloaded':
             self.log_debug(title + " already downloaded")
         else:
             self.log_info("NEW EPISODE: " + title)
-            self.store(title, 'downloaded')
-            self.pyload.api.addPackage(title.encode("utf-8"), link, 1 if self.get_config("queue") else 0)
+            self.plugin.db.store(title, 'downloaded')
+            self.pyload.api.addPackage(title.encode("utf-8"), link, 1 if self.config.get("queue") else 0)
             self.added_items.append(title.encode("utf-8"))
