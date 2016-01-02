@@ -7,7 +7,7 @@ from module.utils import save_join
 
 class FileBot(Addon):
     __name__ = "FileBot"
-    __version__ = "1.7"
+    __version__ = "1.8"
     __type__    = "hook"
     __status__  = "testing"
     __config__ = [("activated", "bool", "Activated", "False"),
@@ -75,7 +75,7 @@ class FileBot(Addon):
     def coreReady(self):
         self.pyload.config.set("general", "folder_per_package", "True")
         ##self.pyload.config.setPlugin("FileBot", "exec", 'cd / && ./filebot.sh "{file}"')
-        if self.get_config('delete_extracted') is True:
+        if self.config.get('delete_extracted') is True:
             self.pyload.config.setPlugin("ExtractArchive", "delete", "True")
             self.pyload.config.setPlugin("ExtractArchive", "deltotrash", "False")
         else:
@@ -84,7 +84,7 @@ class FileBot(Addon):
     def package_finished(self, pypack):
         download_folder = self.pyload.config['general']['download_folder']
         folder = save_join(download_folder, pypack.folder)
-        if self.get_config('delete_extracted') is True:
+        if self.config.get('delete_extracted') is True:
             x = False
             self.log_debug("MKV-Checkup (packageFinished)")
             for root, dirs, files in os.walk(folder):
@@ -113,7 +113,7 @@ class FileBot(Addon):
         if extract_subfolder is True:
             folder = save_join(folder, pypack.folder)
         
-        if self.get_config('delete_extracted') is True:
+        if self.config.get('delete_extracted') is True:
             self.log_debug("MKV-Checkup (package_extracted)")
             for root, dirs, files in os.walk(folder):
                 for name in files:
@@ -132,8 +132,8 @@ class FileBot(Addon):
     def Finished(self, folder):
         args = []
 
-        if self.get_config('filebot'):
-            args.append(self.get_config('filebot'))
+        if self.config.get('filebot'):
+            args.append(self.config.get('filebot'))
         else:
             args.append('filebot')
 
@@ -148,96 +148,96 @@ class FileBot(Addon):
         args.append('-r')
 
         args.append('--conflict')
-        args.append(self.get_config('conflict'))
+        args.append(self.config.get('conflict'))
 
         args.append('--action')
-        args.append(self.get_config('action'))
+        args.append(self.config.get('action'))
 
-        if self.get_config('destination'):
+        if self.config.get('destination'):
             args.append('--output')
-            args.append(self.get_config('destination'))
+            args.append(self.config.get('destination'))
         else:
             args.append('--output')
             args.append(folder)
 
-        if self.get_config('lang'):
+        if self.config.get('lang'):
             args.append('--lang')
-            args.append(self.get_config('lang'))
+            args.append(self.config.get('lang'))
 
         # start with all definitions:
         args.append('--def')
 
-        if self.get_config('exec'):
-            args.append('exec=' + self.get_config('exec'))
+        if self.config.get('exec'):
+            args.append('exec=' + self.config.get('exec'))
 
-        if self.get_config('clean'):
-            args.append('clean=' + self.get_config('clean'))
+        if self.config.get('clean'):
+            args.append('clean=' + self.config.get('clean'))
 
         args.append('skipExtract=y')
 
-        if self.get_config('excludeList'):
-            args.append('excludeList=' + self.get_config('excludeList'))
+        if self.config.get('excludeList'):
+            args.append('excludeList=' + self.config.get('excludeList'))
 
-        if self.get_config('reperror'):
-            args.append('reportError=' + self.get_config('reperror'))
+        if self.config.get('reperror'):
+            args.append('reportError=' + self.config.get('reperror'))
 
-        if self.get_config('unsorted'):
-            args.append('unsorted=' + self.get_config('unsorted'))
+        if self.config.get('unsorted'):
+            args.append('unsorted=' + self.config.get('unsorted'))
             
-        if self.get_config('storeReport'):
-            args.append('storeReport=' + self.get_config('storeReport'))
+        if self.config.get('storeReport'):
+            args.append('storeReport=' + self.config.get('storeReport'))
 
-        if self.get_config('artwork'):
-            args.append('artwork=' + self.get_config('artwork'))
+        if self.config.get('artwork'):
+            args.append('artwork=' + self.config.get('artwork'))
 
-        if self.get_config('subtitles'):
-            args.append('subtitles=' + self.get_config('subtitles'))
+        if self.config.get('subtitles'):
+            args.append('subtitles=' + self.config.get('subtitles'))
 
-        if self.get_config('ignore'):
-            args.append('ignore=' + self.get_config('ignore'))
+        if self.config.get('ignore'):
+            args.append('ignore=' + self.config.get('ignore'))
 
-        if self.get_config('movie'):
-            args.append('movieFormat=' + self.get_config('movie'))
+        if self.config.get('movie'):
+            args.append('movieFormat=' + self.config.get('movie'))
 
-        if self.get_config('series'):
-            args.append('seriesFormat=' + self.get_config('series'))
+        if self.config.get('series'):
+            args.append('seriesFormat=' + self.config.get('series'))
 
-        if self.get_config('no-xattr') is True:
+        if self.config.get('no-xattr') is True:
             args.append(" -no-xattr")
 
-        if self.get_config('xbmc'):
-            args.append('xbmc=' + self.get_config('xbmc'))
+        if self.config.get('xbmc'):
+            args.append('xbmc=' + self.config.get('xbmc'))
             
-        if self.get_config('pushover'):
-            args.append('pushover=' + self.get_config('pushover'))
+        if self.config.get('pushover'):
+            args.append('pushover=' + self.config.get('pushover'))
 
-        if self.get_config('pushbullet'):
-            args.append('pushbullet=' + self.get_config('pushbullet'))
+        if self.config.get('pushbullet'):
+            args.append('pushbullet=' + self.config.get('pushbullet'))
 
-        if self.get_config('plex'):
-            if self.get_config('plextoken'):
-                plexToken = ":" + self.get_config('plextoken')
+        if self.config.get('plex'):
+            if self.config.get('plextoken'):
+                plexToken = ":" + self.config.get('plextoken')
             else:
                 plexToken = ""
 
-            args.append('plex=' + self.get_config('plex') + plexToken)
-            self.log_info('plex refreshed at ' + self.get_config('plex') + plexToken)
+            args.append('plex=' + self.config.get('plex') + plexToken)
+            self.log_info('plex refreshed at ' + self.config.get('plex') + plexToken)
 
 
-        if self.get_config('extras'):
-            args.append('extras='+ self.get_config('extras'))
+        if self.config.get('extras'):
+            args.append('extras='+ self.config.get('extras'))
 
         args.append(folder)
 
         try:
-            if self.get_config('output_to_log') is True:
+            if self.config.get('output_to_log') is True:
                 self.log_info('executed')
                 proc=subprocess.Popen(args, stdout=subprocess.PIPE)
                 for line in proc.stdout:
                     self.log_info(line.decode('utf-8').rstrip('\r|\n'))
                 proc.wait()
                 try:
-                    if self.get_config('cleanfolder') is True:
+                    if self.config.get('cleanfolder') is True:
                         self.log_info('cleaning')
                         proc=subprocess.Popen(['filebot -script fn:cleaner --def root=y ', folder], stdout=subprocess.PIPE)
                         for line in proc.stdout:
@@ -249,7 +249,7 @@ class FileBot(Addon):
                 self.log_info('executed')
                 subprocess.Popen(args, bufsize=-1)
                 try:
-                    if self.get_config('cleanfolder') is True:
+                    if self.config.get('cleanfolder') is True:
                         self.log_info('cleaning')
                         subprocess.Popen(['filebot -script fn:cleaner --def root=y ', folder], bufsize=-1)
                 except:
