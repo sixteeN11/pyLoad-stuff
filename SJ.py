@@ -10,7 +10,6 @@ try:
 except ImportError:
     import json
 
-
 def getSeriesList(file):
     try:
         titles = []
@@ -95,7 +94,7 @@ def notifyPushbullet(api='', msg=''):
 class SJ(Addon):
     __name__ = "SJ"
     __type__    = "hook"
-    __version__ = "2.91"
+    __version__ = "2.8"
     __status__  = "testing"
     __description__ = "Findet und fuegt neue Episoden von SJ.org pyLoad hinzu"
     __config__ = [("activated", "bool", "Aktiviert", "False"),
@@ -226,13 +225,14 @@ class SJ(Addon):
 
     def send_package(self, title, link):
         try:
-            storage = self.plugin.db.retrieve(title)
+            storage = self.db.retrieve(title)
         except Exception:
-            self.log_debug("plugin.db.retrieve got exception, title: %s" % title)                 
+            self.log_debug("db.retrieve got exception, title: %s" % title)                 
         if storage == 'downloaded':
             self.log_debug(title + " already downloaded")
         else:
             self.log_info("NEW EPISODE: " + title)
-            self.plugin.db.store(title, 'downloaded')
+            self.db.store(title, 'downloaded')
             self.pyload.api.addPackage(title.encode("utf-8"), link, 1 if self.config.get("queue") else 0)
             self.added_items.append(title.encode("utf-8"))
+
