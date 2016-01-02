@@ -113,12 +113,12 @@ class HDAreaOrg(Addon):
                 title = replaceUmlauts(title)
                 season = re.compile('.*S\d|\Sd{2}|eason\d|eason\d{2}.*')
                 if (self.config.get("quality") in title) and not any (word.lower() in title.lower() for word in self.config.get("rejectList").split(";")) and not season.match(title):
-                    fetched = self.plugin.db.retrieve(title)
+                    fetched = self.db.retrieve(title)
                     if fetched == 'fetched':
                         self.log_debug(title+ " already fetched")
                     else:
                         self.get_download(all, title)
-                        self.plugin.db.store(title, 'fetched')
+                        self.db.store(title, 'fetched')
     def get_download(self, soup1, title):
         for title in soup1.findAll("div", {"class" : "title"}):
             hda_url = title.a["href"].replace("https","http")
@@ -170,14 +170,14 @@ class HDAreaOrg(Addon):
                 rating = re.sub(r'(.*\s-/10)',r'0.1', rating)
                 rating = "".join(rating.split('\n'))
                 title = replaceUmlauts(title)
-                storage = self.plugin.db.retrieve(title)
+                storage = self.db.retrieve(title)
                 imdb_url = imdb_url.strip()
                 if rating < self.config.get("conf_rating_collector"):
                     self.log_debug(title+" ("+year+") IMDb: "+rating+": zu SCHLECHT")
                 if (storage == 'downloaded') and not (rating < self.config.get("conf_rating_collector")):
                     self.log_debug(title+" ("+year+")" + " already downloaded")
                 else:
-                    self.plugin.db.store(title, 'downloaded')
+                    self.db.store(title, 'downloaded')
                     if (rating < self.config.get("conf_rating_queue")) and (rating > self.config.get("conf_rating_collector")):
                         self.log_info("COLLECTOR: "+title.decode("utf-8")+" ("+year+") IMDb: "+rating)
                         self.pyload.api.addPackage(title.decode("utf-8")+" ("+year+") IMDb: "+rating, dlLink.split('"'), 0)
