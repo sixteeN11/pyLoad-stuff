@@ -1,3 +1,6 @@
+Diese addons werden nicht mehr gepflegt weder an pyload angepasst.
+Alle Fehlermeldungen bitte im pyloadforum diskutieren
+
 [Hook] HDAreaOrg.py
 ==============
  - eigenständiger Moviefetcher
